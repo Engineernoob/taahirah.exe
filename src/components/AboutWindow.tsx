@@ -15,7 +15,7 @@ const SKILLS = [
 
 const QUICK_FACTS = [
   { label: "Role", value: "Software Engineer" },
-  { label: "Based", value: "United States" },
+  { label: "Based", value: "O'Fallon, IL (Open to Remote)" },
   { label: "Focus", value: "Full-Stack Web" },
   { label: "Status", value: "Open to opportunities" },
 ];
@@ -132,15 +132,29 @@ export default function AboutWindow() {
         <div style={{ padding: "0 16px 12px" }}>
           <div className="section-header">About Me</div>
           <p className="content-p">
-            Hi! I'm a software engineer passionate about building clean,
-            performant applications. From a young age I've been fascinated by
-            how things work — that curiosity led me to programming and
-            eventually to full-stack web development.
+            Hi, I'm Taahirah, a software engineer and systems builder. I
+            specialize in building full-stack applications, developer tools, and
+            AI-powered platforms. I enjoy turning complex ideas into clean,
+            performant software that people actually enjoy using.
           </p>
+          <div
+            style={{
+              margin: "12px 0",
+              height: 1,
+              background: "var(--color-gray-300)",
+            }}
+          />
+          <div className="section-header">Identity Statement</div>
           <p className="content-p">
-            I care deeply about user experience, performance, and maintainable
-            code. When I'm not at a keyboard you'll find me exploring new
-            technologies, working out, cooking, or gaming.
+            Software Engineer focused on AI systems, developer tools, and
+            high-performance web applications.
+          </p>
+
+          <p className="content-p">
+            Much of my work focuses on experimentation — building new
+            interfaces, intelligent assistants, and systems that push how
+            software can be designed and experienced. When I’m not coding, I’m
+            usually exploring new technologies, working out, cooking, or gaming.
           </p>
         </div>
 
