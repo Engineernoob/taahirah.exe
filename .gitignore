@@ -29,5 +29,3 @@ Thumbs.db
 # local tooling metadata
 .claude/
 
-# Public files
-public/
