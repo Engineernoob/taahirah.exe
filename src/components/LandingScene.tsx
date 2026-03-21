@@ -1182,30 +1182,995 @@ function buildScene(): SceneObjects {
     );
   }
 
-  // ── Posters on the back wall ───────────────────────────────────────────────
-  // The back wall is at z = -4 (face at z ≈ -3.93). Posters sit just in front.
-  // Slight random tilts for the casually-pinned feel.
-  const WALL_Z = -3.88;
-
-  // Poster 1: Isekai — left side of wall, slightly tilted right
-  addPoster(
-    scene,
-    makePoster_Isekai(),
-    -2.1,
-    2.8,
-    WALL_Z, // x, y, z
-    0, // ry
-    0.035, // tiltZ (slight clockwise)
-    0, // tiltX
+  // ── Trash can (under desk, right side) ────────────────────────────────────
+  add(cyl(0.13, 0.1, 0.28, 10), mat("#1e1e1e", 0.7, 0.1), 1.1, 0.12, 0.85);
+  // rim
+  add(cyl(0.135, 0.135, 0.018, 10), mat("#2a2a2a", 0.5, 0.3), 1.1, 0.27, 0.85);
+  // crumpled paper ball inside
+  add(
+    new THREE.SphereGeometry(0.055, 6, 5),
+    mat("#d8d0b8", 0.95, 0),
+    1.1,
+    0.31,
+    0.85,
   );
 
-  // Poster 2: Shonen action — center-left, slight counter-clockwise tilt
+  // ── Floor lamp (left back corner) ─────────────────────────────────────────
+  const floorLampX = -4.2,
+    floorLampZ = -2.8;
+  // base
+  add(
+    cyl(0.18, 0.22, 0.04, 12),
+    mat("#222222", 0.5, 0.4),
+    floorLampX,
+    0.02,
+    floorLampZ,
+  );
+  // pole
+  add(
+    cyl(0.025, 0.025, 3.2, 8),
+    mat("#2a2a2a", 0.4, 0.6),
+    floorLampX,
+    1.62,
+    floorLampZ,
+  );
+  // shade arm
+  add(
+    box(0.02, 0.02, 0.42),
+    mat("#2a2a2a", 0.4, 0.6),
+    floorLampX,
+    3.18,
+    floorLampZ - 0.18,
+    0,
+    0,
+    0,
+  );
+  // shade
+  add(
+    new THREE.ConeGeometry(0.28, 0.32, 12, 1, true),
+    mat("#c8a060", 0.6, 0),
+    floorLampX,
+    3.08,
+    floorLampZ - 0.38,
+    Math.PI,
+    0,
+    0,
+  );
+  // floor lamp warm glow
+  const floorLampGlow = new THREE.PointLight("#ffcc88", 0.9, 5.5);
+  floorLampGlow.position.set(floorLampX, 2.85, floorLampZ - 0.38);
+  scene.add(floorLampGlow);
+
+  // ── Sticky notes on monitor bezel ─────────────────────────────────────────
+  const stickyData = [
+    {
+      color: "#ffe066",
+      x: -0.31,
+      y: 0.22,
+      rz: -0.08,
+      text: ["fix auth bug", "!!"],
+    },
+    {
+      color: "#a8e6a3",
+      x: 0.28,
+      y: 0.18,
+      rz: 0.06,
+      text: ["deploy fri", "✓ tests"],
+    },
+    { color: "#ffb3ba", x: -0.28, y: -0.14, rz: 0.1, text: ["call mom", "🙂"] },
+  ];
+  stickyData.forEach(({ color, x, y, rz, text }) => {
+    const sc = document.createElement("canvas");
+    sc.width = 128;
+    sc.height = 128;
+    const sctx = sc.getContext("2d")!;
+    sctx.fillStyle = color;
+    sctx.fillRect(0, 0, 128, 128);
+    // fold corner
+    sctx.fillStyle = "rgba(0,0,0,0.12)";
+    sctx.beginPath();
+    sctx.moveTo(96, 128);
+    sctx.lineTo(128, 96);
+    sctx.lineTo(128, 128);
+    sctx.closePath();
+    sctx.fill();
+    sctx.fillStyle = "rgba(255,255,255,0.25)";
+    sctx.beginPath();
+    sctx.moveTo(96, 128);
+    sctx.lineTo(128, 96);
+    sctx.lineTo(110, 114);
+    sctx.closePath();
+    sctx.fill();
+    sctx.fillStyle = "#333";
+    sctx.font = "bold 18px 'Courier New', monospace";
+    text.forEach((line, i) => sctx.fillText(line, 10, 32 + i * 26));
+    const stex = new THREE.CanvasTexture(sc);
+    const smat = new THREE.MeshBasicMaterial({
+      map: stex,
+      side: THREE.FrontSide,
+    });
+    const smesh = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), smat);
+    smesh.position.set(
+      monGrp.position.x + x,
+      monGrp.position.y + y,
+      monGrp.position.z + 0.125,
+    );
+    smesh.rotation.set(monGrp.rotation.x, 0, rz);
+    scene.add(smesh);
+  });
+
+  // ── Open notebook on desk ──────────────────────────────────────────────────
+  // Notebook body — open, lying flat left of keyboard
+  const nbW = 0.38,
+    nbH = 0.005,
+    nbD = 0.28;
+  const nbX = -0.42,
+    nbY = 0.892,
+    nbZ = 0.52;
+  // Left page
+  add(box(nbW / 2, nbH, nbD), mat("#f5f0e8", 0.9, 0), nbX - nbW / 4, nbY, nbZ);
+  // Right page
+  add(box(nbW / 2, nbH, nbD), mat("#f0ece0", 0.9, 0), nbX + nbW / 4, nbY, nbZ);
+  // Spine
+  add(box(0.012, nbH + 0.004, nbD), mat("#2a1a0a", 0.85, 0), nbX, nbY, nbZ);
+  // Cover edge peeking under
+  add(
+    box(nbW + 0.01, 0.003, nbD + 0.01),
+    mat("#1a1008", 0.9, 0),
+    nbX,
+    nbY - 0.004,
+    nbZ,
+  );
+
+  // Doodles drawn on canvas texture for right page
+  const nbCanvas = document.createElement("canvas");
+  nbCanvas.width = 256;
+  nbCanvas.height = 256;
+  const nctx = nbCanvas.getContext("2d")!;
+  nctx.fillStyle = "#f0ece0";
+  nctx.fillRect(0, 0, 256, 256);
+  // Ruled lines
+  nctx.strokeStyle = "#c8c0b0";
+  nctx.lineWidth = 1;
+  for (let ly = 28; ly < 256; ly += 22) {
+    nctx.beginPath();
+    nctx.moveTo(8, ly);
+    nctx.lineTo(248, ly);
+    nctx.stroke();
+  }
+  // Red margin line
+  nctx.strokeStyle = "#e8a0a0";
+  nctx.lineWidth = 1.5;
+  nctx.beginPath();
+  nctx.moveTo(38, 0);
+  nctx.lineTo(38, 256);
+  nctx.stroke();
+  // Handwritten-style notes
+  nctx.fillStyle = "#2244aa";
+  nctx.font = "italic 13px serif";
+  nctx.fillText("portfolio ideas:", 44, 26);
+  nctx.font = "12px serif";
+  nctx.fillStyle = "#223388";
+  [
+    "- 3D landing ✓",
+    "- projects page",
+    "- blog section",
+    "- contact form",
+  ].forEach((line, i) => {
+    nctx.fillText(line, 44, 50 + i * 22);
+  });
+  // Little star doodle
+  nctx.fillStyle = "#cc4444";
+  nctx.font = "bold 22px serif";
+  nctx.fillText("★", 44, 145);
+  // Tiny face sketch
+  nctx.strokeStyle = "#556677";
+  nctx.lineWidth = 1.5;
+  nctx.beginPath();
+  nctx.arc(180, 185, 22, 0, Math.PI * 2);
+  nctx.stroke();
+  nctx.beginPath();
+  nctx.arc(172, 179, 3, 0, Math.PI * 2);
+  nctx.stroke();
+  nctx.beginPath();
+  nctx.arc(188, 179, 3, 0, Math.PI * 2);
+  nctx.stroke();
+  nctx.beginPath();
+  nctx.arc(180, 190, 12, 0.1, Math.PI - 0.1);
+  nctx.stroke();
+  // Arrow doodle
+  nctx.strokeStyle = "#338844";
+  nctx.lineWidth = 2;
+  nctx.beginPath();
+  nctx.moveTo(60, 165);
+  nctx.lineTo(110, 165);
+  nctx.stroke();
+  nctx.beginPath();
+  nctx.moveTo(104, 159);
+  nctx.lineTo(112, 165);
+  nctx.lineTo(104, 171);
+  nctx.stroke();
+  const nbTex = new THREE.CanvasTexture(nbCanvas);
+  const nbPageMat = new THREE.MeshBasicMaterial({ map: nbTex });
+  const nbPage = new THREE.Mesh(
+    new THREE.PlaneGeometry(nbW / 2 - 0.01, nbD - 0.01),
+    nbPageMat,
+  );
+  nbPage.rotation.x = -Math.PI / 2;
+  nbPage.position.set(nbX + nbW / 4, nbY + 0.004, nbZ);
+  scene.add(nbPage);
+
+  // ── Phone face-down on desk ────────────────────────────────────────────────
+  const phoneX = 0.45,
+    phoneY = 0.892,
+    phoneZ = 0.18;
+  // Body
+  add(
+    box(0.08, 0.008, 0.155),
+    mat("#111111", 0.3, 0.6),
+    phoneX,
+    phoneY,
+    phoneZ,
+    0,
+    0.3,
+    0,
+  );
+  // Back glass sheen
+  add(
+    box(0.075, 0.009, 0.15),
+    mat("#1a1a2e", 0.2, 0.8),
+    phoneX,
+    phoneY + 0.001,
+    phoneZ,
+    0,
+    0.3,
+    0,
+  );
+  // Camera bump
+  add(
+    box(0.022, 0.005, 0.022),
+    mat("#0a0a0a", 0.4, 0.5),
+    phoneX - 0.02,
+    phoneY + 0.006,
+    phoneZ - 0.048,
+    0,
+    0.3,
+    0,
+  );
+  // Camera lenses (two)
+  add(
+    cyl(0.006, 0.006, 0.006, 8),
+    mat("#080808", 0.1, 0.9),
+    phoneX - 0.016,
+    phoneY + 0.009,
+    phoneZ - 0.042,
+    0,
+    0.3,
+    0,
+  );
+  add(
+    cyl(0.006, 0.006, 0.006, 8),
+    mat("#080808", 0.1, 0.9),
+    phoneX - 0.026,
+    phoneY + 0.009,
+    phoneZ - 0.054,
+    0,
+    0.3,
+    0,
+  );
+
+  // ── Itachi Funko Pop (right side of monitor, near plant) ──────────────────
+  const itachiX = 0.62,
+    itachiY = 0.89,
+    itachiZ = -0.08;
+  // Base
+  add(
+    box(0.09, 0.015, 0.09),
+    mat("#111111", 0.6, 0.2),
+    itachiX,
+    itachiY,
+    itachiZ,
+  );
+  // Body — Akatsuki black robe
+  add(
+    box(0.055, 0.1, 0.048),
+    mat("#111111", 0.9, 0),
+    itachiX,
+    itachiY + 0.057,
+    itachiZ,
+  );
+  // Red cloud details on robe (tiny red planes)
+  add(
+    box(0.056, 0.03, 0.002),
+    mat("#cc2222", 0.8, 0),
+    itachiX,
+    itachiY + 0.065,
+    itachiZ + 0.025,
+  );
+  // Head — oversized Funko style
+  add(
+    box(0.068, 0.072, 0.06),
+    mat("#c8956c", 0.85, 0),
+    itachiX,
+    itachiY + 0.148,
+    itachiZ,
+  );
+  // Hair — black, spiky swept back
+  add(
+    box(0.072, 0.018, 0.065),
+    mat("#111111", 0.9, 0),
+    itachiX,
+    itachiY + 0.182,
+    itachiZ,
+  );
+  add(
+    box(0.025, 0.038, 0.012),
+    mat("#111111", 0.9, 0),
+    itachiX - 0.026,
+    itachiY + 0.17,
+    itachiZ - 0.028,
+    -0.3,
+    0,
+    0.25,
+  );
+  add(
+    box(0.025, 0.038, 0.012),
+    mat("#111111", 0.9, 0),
+    itachiX + 0.026,
+    itachiY + 0.17,
+    itachiZ - 0.028,
+    -0.3,
+    0,
+    -0.25,
+  );
+  // Headband
+  add(
+    box(0.072, 0.014, 0.01),
+    mat("#444444", 0.5, 0.3),
+    itachiX,
+    itachiY + 0.158,
+    itachiZ + 0.026,
+  );
+  // Scratched Konoha symbol (tiny silver rect)
+  add(
+    box(0.016, 0.012, 0.002),
+    mat("#aaaaaa", 0.3, 0.7),
+    itachiX,
+    itachiY + 0.158,
+    itachiZ + 0.032,
+  );
+  // Eyes — Sharingan red dots
+  add(
+    box(0.01, 0.008, 0.002),
+    mat("#cc0000", 0.4, 0),
+    itachiX - 0.014,
+    itachiY + 0.148,
+    itachiZ + 0.031,
+  );
+  add(
+    box(0.01, 0.008, 0.002),
+    mat("#cc0000", 0.4, 0),
+    itachiX + 0.014,
+    itachiY + 0.148,
+    itachiZ + 0.031,
+  );
+  // Legs
+  add(
+    box(0.022, 0.055, 0.038),
+    mat("#111111", 0.9, 0),
+    itachiX - 0.017,
+    itachiY + 0.027,
+    itachiZ,
+  );
+  add(
+    box(0.022, 0.055, 0.038),
+    mat("#111111", 0.9, 0),
+    itachiX + 0.017,
+    itachiY + 0.027,
+    itachiZ,
+  );
+
+  // ── Sukuna Funko Pop (left of monitor, near mug) ───────────────────────────
+  const sukunaX = -0.52,
+    sukunaY = 0.89,
+    sukunaZ = -0.1;
+  // Base
+  add(
+    box(0.09, 0.015, 0.09),
+    mat("#111111", 0.6, 0.2),
+    sukunaX,
+    sukunaY,
+    sukunaZ,
+  );
+  // Body — dark grey kimono
+  add(
+    box(0.058, 0.1, 0.05),
+    mat("#1a1a1a", 0.9, 0),
+    sukunaX,
+    sukunaY + 0.057,
+    sukunaZ,
+  );
+  // Kimono accent stripe (red)
+  add(
+    box(0.01, 0.1, 0.052),
+    mat("#aa1111", 0.8, 0),
+    sukunaX,
+    sukunaY + 0.057,
+    sukunaZ,
+  );
+  // Head — Funko big head, pale skin
+  add(
+    box(0.072, 0.074, 0.063),
+    mat("#e8c8b0", 0.85, 0),
+    sukunaX,
+    sukunaY + 0.15,
+    sukunaZ,
+  );
+  // Hair — white/silver
+  add(
+    box(0.076, 0.022, 0.068),
+    mat("#e0e0e0", 0.85, 0),
+    sukunaX,
+    sukunaY + 0.184,
+    sukunaZ,
+  );
+  // Tattoo lines on face (dark pink)
+  add(
+    box(0.004, 0.032, 0.002),
+    mat("#cc5588", 0.7, 0),
+    sukunaX - 0.018,
+    sukunaY + 0.15,
+    sukunaZ + 0.032,
+  );
+  add(
+    box(0.004, 0.032, 0.002),
+    mat("#cc5588", 0.7, 0),
+    sukunaX + 0.018,
+    sukunaY + 0.15,
+    sukunaZ + 0.032,
+  );
+  // Extra eyes (Sukuna's 4 eyes — top pair)
+  add(
+    box(0.009, 0.007, 0.002),
+    mat("#220000", 0.4, 0),
+    sukunaX - 0.014,
+    sukunaY + 0.162,
+    sukunaZ + 0.033,
+  );
+  add(
+    box(0.009, 0.007, 0.002),
+    mat("#220000", 0.4, 0),
+    sukunaX + 0.014,
+    sukunaY + 0.162,
+    sukunaZ + 0.033,
+  );
+  // Bottom pair
+  add(
+    box(0.009, 0.007, 0.002),
+    mat("#220000", 0.4, 0),
+    sukunaX - 0.014,
+    sukunaY + 0.142,
+    sukunaZ + 0.033,
+  );
+  add(
+    box(0.009, 0.007, 0.002),
+    mat("#220000", 0.4, 0),
+    sukunaX + 0.014,
+    sukunaY + 0.142,
+    sukunaZ + 0.033,
+  );
+  // Arms slightly raised (menacing pose)
+  add(
+    box(0.06, 0.018, 0.022),
+    mat("#1a1a1a", 0.9, 0),
+    sukunaX - 0.052,
+    sukunaY + 0.072,
+    sukunaZ,
+    0,
+    0,
+    0.35,
+  );
+  add(
+    box(0.06, 0.018, 0.022),
+    mat("#1a1a1a", 0.9, 0),
+    sukunaX + 0.052,
+    sukunaY + 0.072,
+    sukunaZ,
+    0,
+    0,
+    -0.35,
+  );
+  // Legs
+  add(
+    box(0.024, 0.055, 0.04),
+    mat("#1a1a1a", 0.9, 0),
+    sukunaX - 0.018,
+    sukunaY + 0.027,
+    sukunaZ,
+  );
+  add(
+    box(0.024, 0.055, 0.04),
+    mat("#1a1a1a", 0.9, 0),
+    sukunaX + 0.018,
+    sukunaY + 0.027,
+    sukunaZ,
+  );
+
+  // ── Bookshelf on left side wall ────────────────────────────────────────────
+  // Side wall is at x = -5, faces +x direction.
+  // Shelf sits against it, rotated so it faces into the room.
+  const shelfX = -4.62;
+  const shelfMat = mat("#6b3a1f", 0.82, 0);
+  // Back panel
+  add(box(0.06, 1.55, 1.35), shelfMat, shelfX - 0.02, 1.22, -1.1, 0, 0, 0);
+  // Top, bottom, middle shelves
+  add(box(0.38, 0.04, 1.35), shelfMat, shelfX + 0.16, 1.97, -1.1);
+  add(box(0.38, 0.04, 1.35), shelfMat, shelfX + 0.16, 0.47, -1.1);
+  add(box(0.38, 0.04, 1.35), shelfMat, shelfX + 0.16, 1.22, -1.1);
+  // Left + right side panels
+  add(box(0.38, 1.55, 0.04), shelfMat, shelfX + 0.16, 1.22, -1.74);
+  add(box(0.38, 1.55, 0.04), shelfMat, shelfX + 0.16, 1.22, -0.44);
+
+  // Books on bottom shelf (y ≈ 0.47 + 0.02 = 0.49 base)
+  // Manga spines: JJK (purple/black), Bleach (orange/white), Naruto (orange),
+  //               HxH (teal), Demon Slayer (dark teal/green)
+  const mangaBooks = [
+    { title: "JJK", color: "#3a1a5a", accent: "#9933cc", tw: 0.055, th: 0.22 },
+    { title: "BLCH", color: "#e8680a", accent: "#ffffff", tw: 0.05, th: 0.22 },
+    { title: "NRT", color: "#e85a00", accent: "#ffcc00", tw: 0.055, th: 0.22 },
+    { title: "HxH", color: "#1a6a70", accent: "#88dddd", tw: 0.05, th: 0.22 },
+    { title: "DS", color: "#1a3a2a", accent: "#66cc88", tw: 0.055, th: 0.22 },
+  ];
+  let mz = -1.62;
+  mangaBooks.forEach(({ title, color, accent, tw, th }) => {
+    const bmc = document.createElement("canvas");
+    bmc.width = 64;
+    bmc.height = 256;
+    const bmx = bmc.getContext("2d")!;
+    bmx.fillStyle = color;
+    bmx.fillRect(0, 0, 64, 256);
+    bmx.fillStyle = accent;
+    bmx.fillRect(4, 0, 6, 256);
+    bmx.fillStyle = accent;
+    bmx.font = "bold 14px serif";
+    bmx.save();
+    bmx.translate(38, 200);
+    bmx.rotate(-Math.PI / 2);
+    bmx.fillText(title, 0, 0);
+    bmx.restore();
+    const btex = new THREE.CanvasTexture(bmc);
+    const bmesh = new THREE.Mesh(new THREE.BoxGeometry(tw, th, 0.006), [
+      new THREE.MeshStandardMaterial({ map: btex, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color: "#f0e8d8", roughness: 0.9 }),
+      new THREE.MeshStandardMaterial({ color: "#e8dfc8", roughness: 0.9 }),
+      new THREE.MeshStandardMaterial({ color, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color, roughness: 0.85 }),
+    ]);
+    bmesh.position.set(shelfX + 0.19, 0.49 + th / 2, mz);
+    bmesh.rotation.y = Math.PI / 2;
+    bmesh.castShadow = true;
+    scene.add(bmesh);
+    mz += tw + 0.01;
+  });
+
+  // Books on top shelf (y ≈ 1.22 + 0.02 = 1.24 base)
+  // 48 Laws of Power (black/gold), Art of War (red/gold), Thinking F&S (blue/white)
+  const topBooks = [
+    {
+      title: "48 LAWS",
+      subtitle: "OF POWER",
+      color: "#0a0a0a",
+      accent: "#c8a020",
+      tw: 0.07,
+      th: 0.26,
+    },
+    {
+      title: "ART",
+      subtitle: "OF WAR",
+      color: "#8b1010",
+      accent: "#e8cc60",
+      tw: 0.055,
+      th: 0.22,
+    },
+    {
+      title: "THINKING",
+      subtitle: "FAST&SLOW",
+      color: "#1a3060",
+      accent: "#e8e8e8",
+      tw: 0.075,
+      th: 0.26,
+    },
+  ];
+  let tz = -1.65;
+  topBooks.forEach(({ title, subtitle, color, accent, tw, th }) => {
+    const tbc = document.createElement("canvas");
+    tbc.width = 64;
+    tbc.height = 256;
+    const tbx = tbc.getContext("2d")!;
+    tbx.fillStyle = color;
+    tbx.fillRect(0, 0, 64, 256);
+    tbx.fillStyle = accent;
+    tbx.fillRect(0, 0, 64, 8);
+    tbx.fillRect(0, 248, 64, 8);
+    tbx.font = "bold 13px serif";
+    tbx.fillStyle = accent;
+    tbx.save();
+    tbx.translate(38, 195);
+    tbx.rotate(-Math.PI / 2);
+    tbx.fillText(title, 0, 0);
+    tbx.restore();
+    tbx.font = "10px serif";
+    tbx.save();
+    tbx.translate(22, 195);
+    tbx.rotate(-Math.PI / 2);
+    tbx.fillText(subtitle, 0, 0);
+    tbx.restore();
+    const ttex = new THREE.CanvasTexture(tbc);
+    const tmesh = new THREE.Mesh(new THREE.BoxGeometry(tw, th, 0.006), [
+      new THREE.MeshStandardMaterial({ map: ttex, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color: "#f0e8d8", roughness: 0.9 }),
+      new THREE.MeshStandardMaterial({ color: "#e0d8c0", roughness: 0.9 }),
+      new THREE.MeshStandardMaterial({ color, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color, roughness: 0.85 }),
+    ]);
+    tmesh.position.set(shelfX + 0.19, 1.24 + th / 2, tz);
+    tmesh.rotation.y = Math.PI / 2;
+    tmesh.castShadow = true;
+    scene.add(tmesh);
+    tz += tw + 0.012;
+  });
+
+  // Small knick-knacks on middle shelf
+  // Mini succulent pot
+  add(
+    cyl(0.042, 0.036, 0.07, 8),
+    mat("#7a3a10", 0.8, 0),
+    shelfX + 0.19,
+    1.26,
+    -0.72,
+  );
+  add(
+    cyl(0.038, 0.038, 0.005, 8),
+    mat("#1a1a1a", 0.9, 0),
+    shelfX + 0.19,
+    1.298,
+    -0.72,
+  );
+  add(
+    cyl(0.006, 0.006, 0.055, 6),
+    mat("#1a4a18", 1, 0),
+    shelfX + 0.19,
+    1.345,
+    -0.72,
+  );
+  // Small figurine / trophy shape
+  add(
+    cyl(0.025, 0.03, 0.065, 8),
+    mat("#c8a020", 0.4, 0.6),
+    shelfX + 0.19,
+    1.264,
+    -0.58,
+  );
+  add(
+    new THREE.SphereGeometry(0.028, 8, 8),
+    mat("#c8a020", 0.4, 0.6),
+    shelfX + 0.19,
+    1.326,
+    -0.58,
+  );
+
+  // ── Cork board on back wall (left side, above posters) ────────────────────
+  const WALL_Z = -3.88;
+  const cbW = 1.1,
+    cbH = 0.72;
+  const cbX = -3.0,
+    cbY = 4.1;
+  // Cork board frame
+  add(
+    box(cbW + 0.06, cbH + 0.06, 0.04),
+    mat("#5a3010", 0.9, 0),
+    cbX,
+    cbY,
+    WALL_Z + 0.01,
+  );
+  // Cork surface
+  const corkC = document.createElement("canvas");
+  corkC.width = 512;
+  corkC.height = 340;
+  const corkCtx = corkC.getContext("2d")!;
+  // Cork texture base
+  corkCtx.fillStyle = "#c8914a";
+  corkCtx.fillRect(0, 0, 512, 340);
+  // Cork grain dots
+  for (let i = 0; i < 320; i++) {
+    corkCtx.fillStyle = `rgba(${100 + Math.random() * 60},${55 + Math.random() * 40},${20 + Math.random() * 20},0.35)`;
+    corkCtx.beginPath();
+    corkCtx.ellipse(
+      Math.random() * 512,
+      Math.random() * 340,
+      Math.random() * 6 + 1,
+      Math.random() * 3 + 1,
+      Math.random() * Math.PI,
+      0,
+      Math.PI * 2,
+    );
+    corkCtx.fill();
+  }
+  const corkTex = new THREE.CanvasTexture(corkC);
+  const corkMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(cbW, cbH),
+    new THREE.MeshStandardMaterial({ map: corkTex, roughness: 0.95 }),
+  );
+  corkMesh.position.set(cbX, cbY, WALL_Z + 0.03);
+  scene.add(corkMesh);
+
+  // Pinned notes on cork board
+  const corkNotes = [
+    {
+      x: cbX - 0.35,
+      y: cbY + 0.18,
+      color: "#ffe066",
+      rz: -0.07,
+      lines: ["Sprint Goals", "✓ landing pg", "→ projects"],
+    },
+    {
+      x: cbX + 0.05,
+      y: cbY + 0.2,
+      color: "#b8f0b8",
+      rz: 0.05,
+      lines: ["TODO", "résumé pdf", "dark mode"],
+    },
+    {
+      x: cbX + 0.38,
+      y: cbY + 0.15,
+      color: "#ffc8c8",
+      rz: -0.04,
+      lines: ["inspo:", "awwwards.com", "lottiefiles"],
+    },
+    {
+      x: cbX - 0.28,
+      y: cbY - 0.18,
+      color: "#c8e8ff",
+      rz: 0.09,
+      lines: ["remember:", "ship it!", "done > perfect"],
+    },
+    {
+      x: cbX + 0.22,
+      y: cbY - 0.15,
+      color: "#ffe066",
+      rz: -0.06,
+      lines: ["reading:", "48 Laws ✓", "Clean Code →"],
+    },
+  ];
+  corkNotes.forEach(({ x, y, color, rz, lines }) => {
+    const nc = document.createElement("canvas");
+    nc.width = 160;
+    nc.height = 160;
+    const nctx2 = nc.getContext("2d")!;
+    nctx2.fillStyle = color;
+    nctx2.fillRect(0, 0, 160, 160);
+    nctx2.fillStyle = "rgba(0,0,0,0.07)";
+    nctx2.fillRect(0, 148, 160, 12);
+    nctx2.fillStyle = "#333";
+    nctx2.font = "bold 16px 'Courier New', monospace";
+    nctx2.fillText(lines[0], 10, 26);
+    nctx2.font = "13px 'Courier New', monospace";
+    nctx2.fillStyle = "#444";
+    lines.slice(1).forEach((l, i) => nctx2.fillText(l, 10, 52 + i * 22));
+    const ntex = new THREE.CanvasTexture(nc);
+    const nmesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.18, 0.18),
+      new THREE.MeshBasicMaterial({ map: ntex }),
+    );
+    nmesh.position.set(x, y, WALL_Z + 0.05);
+    nmesh.rotation.z = rz;
+    scene.add(nmesh);
+    // Pushpin
+    const ppin = new THREE.Mesh(
+      new THREE.SphereGeometry(0.014, 6, 6),
+      new THREE.MeshStandardMaterial({
+        color: "#dd3333",
+        roughness: 0.5,
+        metalness: 0.3,
+      }),
+    );
+    ppin.position.set(x, y + 0.085, WALL_Z + 0.062);
+    scene.add(ppin);
+  });
+
+  // ── Whiteboard on back wall (right side) ──────────────────────────────────
+  const wbW = 0.95,
+    wbH = 0.6;
+  const wbX = 3.1,
+    wbY = 4.0;
+  // Frame
+  add(
+    box(wbW + 0.06, wbH + 0.06, 0.035),
+    mat("#888888", 0.4, 0.5),
+    wbX,
+    wbY,
+    WALL_Z + 0.01,
+  );
+  // Whiteboard surface with writing
+  const wbC = document.createElement("canvas");
+  wbC.width = 512;
+  wbC.height = 320;
+  const wbCtx = wbC.getContext("2d")!;
+  wbCtx.fillStyle = "#f8f8f6";
+  wbCtx.fillRect(0, 0, 512, 320);
+  // Faint marker ghost marks
+  wbCtx.fillStyle = "rgba(180,180,200,0.15)";
+  wbCtx.fillRect(20, 60, 200, 3);
+  wbCtx.fillRect(20, 100, 160, 3);
+  // Marker writing
+  wbCtx.strokeStyle = "#1144cc";
+  wbCtx.lineWidth = 3;
+  wbCtx.font = "bold 28px serif";
+  wbCtx.fillStyle = "#1144cc";
+  wbCtx.fillText("System Design", 20, 48);
+  wbCtx.lineWidth = 2;
+  wbCtx.beginPath();
+  wbCtx.moveTo(20, 56);
+  wbCtx.lineTo(290, 56);
+  wbCtx.stroke();
+  wbCtx.font = "20px serif";
+  wbCtx.fillStyle = "#222222";
+  wbCtx.fillText("Client  →  API  →  DB", 30, 88);
+  // Arrow
+  wbCtx.strokeStyle = "#cc2222";
+  wbCtx.lineWidth = 2.5;
+  wbCtx.beginPath();
+  wbCtx.moveTo(30, 110);
+  wbCtx.lineTo(30, 170);
+  wbCtx.lineTo(120, 170);
+  wbCtx.stroke();
+  wbCtx.beginPath();
+  wbCtx.moveTo(112, 163);
+  wbCtx.lineTo(122, 170);
+  wbCtx.lineTo(112, 177);
+  wbCtx.stroke();
+  // Box diagram
+  wbCtx.strokeStyle = "#338833";
+  wbCtx.lineWidth = 2;
+  wbCtx.strokeRect(140, 110, 100, 50);
+  wbCtx.font = "16px serif";
+  wbCtx.fillStyle = "#338833";
+  wbCtx.fillText("Cache", 165, 140);
+  wbCtx.strokeRect(260, 110, 100, 50);
+  wbCtx.fillStyle = "#884400";
+  wbCtx.fillText("Queue", 283, 140);
+  // Bottom note
+  wbCtx.font = "italic 15px serif";
+  wbCtx.fillStyle = "#aa2222";
+  wbCtx.fillText("* revisit auth flow tmrw", 20, 240);
+  // Erased smudge
+  wbCtx.fillStyle = "rgba(220,220,210,0.6)";
+  wbCtx.fillRect(380, 80, 110, 60);
+  const wbTex = new THREE.CanvasTexture(wbC);
+  const wbMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(wbW, wbH),
+    new THREE.MeshStandardMaterial({
+      map: wbTex,
+      roughness: 0.55,
+      metalness: 0.05,
+    }),
+  );
+  wbMesh.position.set(wbX, wbY, WALL_Z + 0.03);
+  scene.add(wbMesh);
+  // Marker tray at bottom of whiteboard
+  add(
+    box(wbW, 0.025, 0.045),
+    mat("#777777", 0.4, 0.5),
+    wbX,
+    wbY - wbH / 2 - 0.01,
+    WALL_Z + 0.04,
+  );
+  // Marker on tray
+  add(
+    box(0.12, 0.018, 0.018),
+    mat("#1144cc", 0.6, 0),
+    wbX - 0.28,
+    wbY - wbH / 2 + 0.01,
+    WALL_Z + 0.06,
+  );
+
+  // ── Wall clock on back wall (center, high up) ──────────────────────────────
+  const clockX = 0.5,
+    clockY = 4.55;
+  const clockFaceC = document.createElement("canvas");
+  clockFaceC.width = 256;
+  clockFaceC.height = 256;
+  const cfCtx = clockFaceC.getContext("2d")!;
+  // Face
+  cfCtx.fillStyle = "#f5f0e8";
+  cfCtx.beginPath();
+  cfCtx.arc(128, 128, 122, 0, Math.PI * 2);
+  cfCtx.fill();
+  cfCtx.strokeStyle = "#222222";
+  cfCtx.lineWidth = 6;
+  cfCtx.beginPath();
+  cfCtx.arc(128, 128, 122, 0, Math.PI * 2);
+  cfCtx.stroke();
+  // Hour markers
+  cfCtx.fillStyle = "#1a1a1a";
+  for (let h = 0; h < 12; h++) {
+    const a = (h / 12) * Math.PI * 2 - Math.PI / 2;
+    const isMajor = h % 3 === 0;
+    const r1 = isMajor ? 96 : 105;
+    cfCtx.beginPath();
+    cfCtx.arc(
+      128 + Math.cos(a) * r1,
+      128 + Math.sin(a) * r1,
+      isMajor ? 6 : 3,
+      0,
+      Math.PI * 2,
+    );
+    cfCtx.fill();
+  }
+  // Hour numbers
+  cfCtx.font = "bold 20px serif";
+  cfCtx.fillStyle = "#1a1a1a";
+  cfCtx.textAlign = "center";
+  [
+    [12, 128, 22],
+    [3, 234, 134],
+    [6, 128, 242],
+    [9, 24, 134],
+  ].forEach(([n, x, y]) => cfCtx.fillText(String(n), x, y));
+  cfCtx.textAlign = "left";
+  // Hands — show ~10:10 (classic watch pose)
+  const drawHand = (
+    angleDeg: number,
+    length: number,
+    width: number,
+    color: string,
+  ) => {
+    const a = ((angleDeg - 90) * Math.PI) / 180;
+    cfCtx.strokeStyle = color;
+    cfCtx.lineWidth = width;
+    cfCtx.lineCap = "round";
+    cfCtx.beginPath();
+    cfCtx.moveTo(128, 128);
+    cfCtx.lineTo(128 + Math.cos(a) * length, 128 + Math.sin(a) * length);
+    cfCtx.stroke();
+  };
+  drawHand(300, 72, 7, "#1a1a1a"); // hour ~10
+  drawHand(60, 95, 5, "#1a1a1a"); // minute ~2
+  drawHand(180, 100, 2, "#cc2222"); // second
+  // Center dot
+  cfCtx.fillStyle = "#cc2222";
+  cfCtx.beginPath();
+  cfCtx.arc(128, 128, 7, 0, Math.PI * 2);
+  cfCtx.fill();
+  cfCtx.fillStyle = "#111";
+  cfCtx.beginPath();
+  cfCtx.arc(128, 128, 3, 0, Math.PI * 2);
+  cfCtx.fill();
+  const clockTex = new THREE.CanvasTexture(clockFaceC);
+  // Clock rim
+  add(
+    new THREE.CylinderGeometry(0.24, 0.24, 0.04, 24),
+    mat("#2a2a2a", 0.3, 0.6),
+    clockX,
+    clockY,
+    WALL_Z + 0.04,
+    Math.PI / 2,
+    0,
+    0,
+  );
+  const clockMesh = new THREE.Mesh(
+    new THREE.CircleGeometry(0.22, 32),
+    new THREE.MeshBasicMaterial({ map: clockTex }),
+  );
+  clockMesh.position.set(clockX, clockY, WALL_Z + 0.065);
+  scene.add(clockMesh);
+
+  // ── Posters on the back wall ───────────────────────────────────────────────
+  addPoster(scene, makePoster_Isekai(), -2.1, 2.8, WALL_Z, 0, 0.035, 0);
   addPoster(scene, makePoster_Shonen(), -0.55, 2.65, WALL_Z, 0, -0.045, 0);
-
-  // Poster 3: Fantasy dragon — center-right, gentle clockwise lean
   addPoster(scene, makePoster_Fantasy(), 1.0, 2.75, WALL_Z, 0, 0.02, 0);
-
-  // Poster 4: Tournament arc — right side, noticeably tilted
   addPoster(scene, makePoster_Tournament(), 2.4, 2.6, WALL_Z, 0, -0.065, 0);
 
   return { scene, screenGlow, updateScreen };
@@ -1594,4 +2559,3 @@ export default function LandingScene({
     </div>
   );
 }
- 
