@@ -59,7 +59,7 @@ export default function AboutWindow() {
             userSelect: "none",
           }}
         >
-          👩🏾‍💻
+          TD
         </div>
         <div>
           <div
@@ -144,12 +144,6 @@ export default function AboutWindow() {
               background: "var(--color-gray-300)",
             }}
           />
-          <div className="section-header">Identity Statement</div>
-          <p className="content-p">
-            Software Engineer focused on AI systems, developer tools, and
-            high-performance web applications.
-          </p>
-
           <p className="content-p">
             Much of my work focuses on experimentation — building new
             interfaces, intelligent assistants, and systems that push how

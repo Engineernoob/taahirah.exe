@@ -13,7 +13,7 @@ const projects = [
     description:
       "Noir is a terminal-based IDE for developers who prefer a minimalist, keyboard-driven coding environment. It features a built-in file explorer, code editor with syntax highlighting, and Git integration.",
     tech: ["Rust", "TUI", "Git"],
-    icon: "<FontAwesomeIcon icon={faTerminal} />",
+    icon: "🕶️",
   },
   {
     name: "PatchPilot",
@@ -21,7 +21,7 @@ const projects = [
     description:
       "Open-source AI support engineer for debugging apps, ranking root causes, and generating patch-ready fixes from logs, stack traces, and bug reports.",
     tech: ["Python", "Machine Learning", "NLP", "Ollama"],
-    icon: "<FontAwesomeIcon icon={faPlaneDeparture} />",
+    icon: "🩹",
   },
   {
     name: "StackTrace AI",
@@ -29,7 +29,7 @@ const projects = [
     description:
       "a developer tool that analyzes stack traces and converts them into clear explanations with suggested fixes, leveraging AI to help developers quickly understand and resolve errors in their code.",
     tech: ["Python", "Machine Learning", "NLP", "Ollama"],
-    icon: "<FontAwesomeIcon icon={faCubes} />",
+    icon: "📚",
   },
   {
     name: "OpsHub API",
@@ -37,7 +37,7 @@ const projects = [
     description:
       "Production-ready REST API built with TypeScript, Express, Prisma, and PostgreSQL. It provides endpoints for user authentication, project management, and AI-assisted debugging features, serving as the backend for the PatchPilot support engineer tool.",
     tech: ["TypeScript", "Express", "Prisma", "PostgreSQL"],
-    icon: "<FontAwesomeIcon icon={faTape} />",
+    icon: "⏿",
   },
 ];
 
