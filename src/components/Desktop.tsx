@@ -19,6 +19,7 @@ import {
   IconWindowsLogo,
   IconWolfenstein,
   IconBlog,
+  IconNetflix,
 } from "./Win95Icons";
 
 const ShowcaseWindow = lazy(() => import("./ShowcaseWindow"));
@@ -28,6 +29,7 @@ const ProjectsWindow = lazy(() => import("./ProjectsWindow"));
 const ContactWindow = lazy(() => import("./ContactWindow"));
 const Blog = lazy(() => import("./Blog"));
 const WolfensteinWindow = lazy(() => import("./WolfensteinWindow"));
+const NetflixWindow = lazy(() => import("./NetflixWindow"));
 
 type WindowId =
   | "showcase"
@@ -36,7 +38,8 @@ type WindowId =
   | "projects"
   | "contact"
   | "wolfenstein"
-  | "blog";
+  | "blog"
+  | "netflix";
 
 interface WindowState {
   id: WindowId;
@@ -77,6 +80,7 @@ const ICONS: IconConfig[] = [
   { id: "contact", label: "Contact.txt", Icon: IconEnvelope },
   { id: "wolfenstein", label: "Wolf3D.exe", Icon: IconWolfenstein },
   { id: "blog", label: "Blog.txt", Icon: IconBlog },
+  { id: "netflix", label: "Netflix 95", Icon: IconNetflix },
 ];
 
 interface WindowConfig {
@@ -118,8 +122,8 @@ const WINDOW_CONFIG: Record<WindowId, WindowConfig> = {
     width: 680,
     height: 520,
   },
-
   blog: { title: "Blog.txt", Icon: IconBlog, width: 680, height: 480 },
+  netflix: { title: "Netflix 95", Icon: IconNetflix, width: 760, height: 560 },
 };
 
 const WINDOW_INITIAL: Record<WindowId, { x: number; y: number }> = {
@@ -130,6 +134,7 @@ const WINDOW_INITIAL: Record<WindowId, { x: number; y: number }> = {
   contact: { x: 150, y: 65 },
   wolfenstein: { x: 100, y: 30 },
   blog: { x: 140, y: 50 },
+  netflix: { x: 170, y: 45 },
 };
 
 let topZ = 10;
@@ -142,6 +147,7 @@ const WINDOW_IDS: WindowId[] = [
   "contact",
   "wolfenstein",
   "blog",
+  "netflix",
 ];
 
 const WINDOW_ID_SET = new Set<WindowId>(WINDOW_IDS);
@@ -247,6 +253,8 @@ function renderWindowContent(
       return <WolfensteinWindow />;
     case "blog":
       return <Blog />;
+    case "netflix":
+      return <NetflixWindow />;
     default:
       return null;
   }
