@@ -1,4 +1,5 @@
 import { Suspense, lazy, useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 const LandingScene = lazy(() => import("./components/LandingScene"));
 const BootScreen = lazy(() => import("./components/BootScreen"));
@@ -78,27 +79,30 @@ export default function App() {
   };
 
   return (
-    <Suspense fallback={<AppLoadingScreen />}>
-      {appState === "landing" && (
-        <LandingScene onStart={() => setAppState("bios")} />
-      )}
-      {appState === "bios" && (
-        <BootScreen onComplete={() => setAppState("splash")} />
-      )}
-      {appState === "splash" && (
-        <WindowsSplash onComplete={() => setAppState("desktop")} />
-      )}
-      {appState === "desktop" && <Desktop onShutdown={handleShutdown} />}
-      {appState === "shutdown" && (
-        <LandingScene mode="shutdown" onStart={() => setAppState("bios")} />
-      )}
-      {appState === "dos" && (
-        <PowerStateScreen
-          title="Starting MS-DOS mode..."
-          subtitle={"C:\\>\nClick anywhere to reboot back into Windows."}
-          onWake={() => setAppState("bios")}
-        />
-      )}
-    </Suspense>
+    <>
+      <Suspense fallback={<AppLoadingScreen />}>
+        {appState === "landing" && (
+          <LandingScene onStart={() => setAppState("bios")} />
+        )}
+        {appState === "bios" && (
+          <BootScreen onComplete={() => setAppState("splash")} />
+        )}
+        {appState === "splash" && (
+          <WindowsSplash onComplete={() => setAppState("desktop")} />
+        )}
+        {appState === "desktop" && <Desktop onShutdown={handleShutdown} />}
+        {appState === "shutdown" && (
+          <LandingScene mode="shutdown" onStart={() => setAppState("bios")} />
+        )}
+        {appState === "dos" && (
+          <PowerStateScreen
+            title="Starting MS-DOS mode..."
+            subtitle={"C:\\>\nClick anywhere to reboot back into Windows."}
+            onWake={() => setAppState("bios")}
+          />
+        )}
+      </Suspense>
+      <Analytics />
+    </>
   );
 }
