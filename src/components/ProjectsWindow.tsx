@@ -8,7 +8,7 @@ const projects: (ProjectData & { url: string })[] = [
       "An interactive portfolio website styled as a retro operating system with draggable windows, BIOS boot screen, and Win95 chrome.",
     tech: ["React", "TypeScript", "CSS"],
     icon: "🖥️",
-    status: "In-Progress"
+    status: "Live"
   },
   {
     name: "Noir - Terminal IDE",
@@ -44,7 +44,7 @@ const projects: (ProjectData & { url: string })[] = [
       "Production-ready REST API built with TypeScript, Express, Prisma, and PostgreSQL. It provides endpoints for user authentication, project management, and AI-assisted debugging features, serving as the backend for the PatchPilot support engineer tool.",
     tech: ["TypeScript", "Express", "Prisma", "PostgreSQL"],
     icon: "⏿",
-    status: "In-Progress"
+    status: "Live"
   },
   {
     name: "AI Knowledge Agent",
