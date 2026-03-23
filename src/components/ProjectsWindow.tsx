@@ -8,6 +8,7 @@ const projects: (ProjectData & { url: string })[] = [
       "An interactive portfolio website styled as a retro operating system with draggable windows, BIOS boot screen, and Win95 chrome.",
     tech: ["React", "TypeScript", "CSS"],
     icon: "🖥️",
+    status: "In-Progress"
   },
   {
     name: "Noir - Terminal IDE",
@@ -16,6 +17,7 @@ const projects: (ProjectData & { url: string })[] = [
       "Noir is a terminal-based IDE for developers who prefer a minimalist, keyboard-driven coding environment. It features a built-in file explorer, code editor with syntax highlighting, and Git integration.",
     tech: ["Rust", "TUI", "Git"],
     icon: "🕶️",
+    status: "In-Progress"
   },
   {
     name: "PatchPilot",
@@ -24,6 +26,7 @@ const projects: (ProjectData & { url: string })[] = [
       "Open-source AI support engineer for debugging apps, ranking root causes, and generating patch-ready fixes from logs, stack traces, and bug reports.",
     tech: ["Python", "Machine Learning", "NLP", "Ollama"],
     icon: "🩹",
+    status: "In-Progress"
   },
   {
     name: "StackTrace AI",
@@ -32,6 +35,7 @@ const projects: (ProjectData & { url: string })[] = [
       "a developer tool that analyzes stack traces and converts them into clear explanations with suggested fixes, leveraging AI to help developers quickly understand and resolve errors in their code.",
     tech: ["Python", "Machine Learning", "NLP", "Ollama"],
     icon: "📚",
+    status: "In-Progress"
   },
   {
     name: "OpsHub API",
@@ -40,6 +44,7 @@ const projects: (ProjectData & { url: string })[] = [
       "Production-ready REST API built with TypeScript, Express, Prisma, and PostgreSQL. It provides endpoints for user authentication, project management, and AI-assisted debugging features, serving as the backend for the PatchPilot support engineer tool.",
     tech: ["TypeScript", "Express", "Prisma", "PostgreSQL"],
     icon: "⏿",
+    status: "In-Progress"
   },
   {
     name: "AI Knowledge Agent",
