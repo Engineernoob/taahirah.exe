@@ -21,11 +21,13 @@ import {
   IconBlog,
   IconNetflix,
 } from "./Win95Icons";
+import type { ProjectData } from "./ProjectDetailWindow";
 
 const ShowcaseWindow = lazy(() => import("./ShowcaseWindow"));
 const AboutWindow = lazy(() => import("./AboutWindow"));
 const ExperienceWindow = lazy(() => import("./ExperienceWindow"));
 const ProjectsWindow = lazy(() => import("./ProjectsWindow"));
+const ProjectDetailWindow = lazy(() => import("./ProjectDetailWindow"));
 const ContactWindow = lazy(() => import("./ContactWindow"));
 const Blog = lazy(() => import("./Blog"));
 const WolfensteinWindow = lazy(() => import("./WolfensteinWindow"));
@@ -36,6 +38,7 @@ type WindowId =
   | "about"
   | "experience"
   | "projects"
+  | "project-detail"
   | "contact"
   | "wolfenstein"
   | "blog"
@@ -64,7 +67,7 @@ type ShutdownAction = "shutdown" | "restart" | "dos";
 export const OWNER_NAME = "Taahirah Denmark";
 export const OWNER_TITLE = "Software Engineer";
 
-const DESKTOP_STATE_STORAGE_KEY = "portfolio.desktop.state.v1";
+const DESKTOP_STATE_STORAGE_KEY = "portfolio.desktop.state.v2";
 
 interface IconConfig {
   id: WindowId;
@@ -72,6 +75,7 @@ interface IconConfig {
   Icon: ComponentType<{ size?: number }>;
 }
 
+// project-detail is NOT in ICONS — it only opens via double-click from Projects
 const ICONS: IconConfig[] = [
   { id: "showcase", label: "My Computer", Icon: IconMyComputer },
   { id: "about", label: "About Me", Icon: IconNotepad },
@@ -110,6 +114,12 @@ const WINDOW_CONFIG: Record<WindowId, WindowConfig> = {
     width: 560,
     height: 500,
   },
+  "project-detail": {
+    title: "Project Details",
+    Icon: IconFolder,
+    width: 460,
+    height: 420,
+  },
   contact: {
     title: "Contact.txt",
     Icon: IconEnvelope,
@@ -131,6 +141,7 @@ const WINDOW_INITIAL: Record<WindowId, { x: number; y: number }> = {
   about: { x: 160, y: 60 },
   experience: { x: 180, y: 70 },
   projects: { x: 200, y: 80 },
+  "project-detail": { x: 240, y: 100 },
   contact: { x: 150, y: 65 },
   wolfenstein: { x: 100, y: 30 },
   blog: { x: 140, y: 50 },
@@ -144,6 +155,7 @@ const WINDOW_IDS: WindowId[] = [
   "about",
   "experience",
   "projects",
+  "project-detail",
   "contact",
   "wolfenstein",
   "blog",
@@ -197,7 +209,6 @@ function restoreDesktopState(): PersistedDesktopState {
       ) {
         return [];
       }
-
       seen.add(candidate.id);
       return [
         {
@@ -211,7 +222,6 @@ function restoreDesktopState(): PersistedDesktopState {
     });
 
     if (openWindows.length === 0) return fallback;
-
     topZ = Math.max(10, ...openWindows.map((win) => win.zIndex));
 
     return {
@@ -225,38 +235,6 @@ function restoreDesktopState(): PersistedDesktopState {
     };
   } catch {
     return fallback;
-  }
-}
-
-function renderWindowContent(
-  id: WindowId,
-  openWindow: (id: string) => void,
-): ReactNode {
-  switch (id) {
-    case "showcase":
-      return (
-        <ShowcaseWindow
-          onOpen={openWindow}
-          ownerName={OWNER_NAME}
-          ownerTitle={OWNER_TITLE}
-        />
-      );
-    case "about":
-      return <AboutWindow />;
-    case "experience":
-      return <ExperienceWindow />;
-    case "projects":
-      return <ProjectsWindow />;
-    case "contact":
-      return <ContactWindow />;
-    case "wolfenstein":
-      return <WolfensteinWindow />;
-    case "blog":
-      return <Blog />;
-    case "netflix":
-      return <NetflixWindow />;
-    default:
-      return null;
   }
 }
 
@@ -295,6 +273,9 @@ export default function Desktop({ onShutdown }: DesktopProps) {
   const [shutdownOpen, setShutdownOpen] = useState(false);
   const [shutdownAction, setShutdownAction] =
     useState<ShutdownAction>("shutdown");
+
+  // ── Active project for the detail window ────────────────────────────────────
+  const [activeProject, setActiveProject] = useState<ProjectData | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -337,6 +318,40 @@ export default function Desktop({ onShutdown }: DesktopProps) {
           },
         ],
         activeId: winId,
+      };
+    });
+  }, []);
+
+  // ── Open a project detail window from ProjectsWindow double-click ────────────
+  const openProjectDetail = useCallback((project: ProjectData) => {
+    setActiveProject(project);
+    setDesktopState((prev) => {
+      const existing = prev.openWindows.find((w) => w.id === "project-detail");
+      topZ++;
+      if (existing) {
+        // Window already open — just bring to front (content swaps via activeProject state)
+        return {
+          openWindows: prev.openWindows.map((w) =>
+            w.id === "project-detail"
+              ? { ...w, zIndex: topZ, minimized: false }
+              : w,
+          ),
+          activeId: "project-detail",
+        };
+      }
+      playWindowOpen();
+      return {
+        openWindows: [
+          ...prev.openWindows,
+          {
+            id: "project-detail",
+            zIndex: topZ,
+            x: WINDOW_INITIAL["project-detail"].x + Math.random() * 30,
+            y: WINDOW_INITIAL["project-detail"].y + Math.random() * 20,
+            minimized: false,
+          },
+        ],
+        activeId: "project-detail",
       };
     });
   }, []);
@@ -397,13 +412,48 @@ export default function Desktop({ onShutdown }: DesktopProps) {
     });
   };
 
+  // ── renderWindowContent is inside Desktop so it closes over activeProject ────
+  const renderWindowContent = useCallback(
+    (id: WindowId): ReactNode => {
+      switch (id) {
+        case "showcase":
+          return (
+            <ShowcaseWindow
+              onOpen={openWindow}
+              ownerName={OWNER_NAME}
+              ownerTitle={OWNER_TITLE}
+            />
+          );
+        case "about":
+          return <AboutWindow />;
+        case "experience":
+          return <ExperienceWindow />;
+        case "projects":
+          return <ProjectsWindow onOpenProject={openProjectDetail} />;
+        case "project-detail":
+          return activeProject ? (
+            <ProjectDetailWindow {...activeProject} />
+          ) : null;
+        case "contact":
+          return <ContactWindow />;
+        case "wolfenstein":
+          return <WolfensteinWindow />;
+        case "blog":
+          return <Blog />;
+        case "netflix":
+          return <NetflixWindow />;
+        default:
+          return null;
+      }
+    },
+    [openWindow, openProjectDetail, activeProject],
+  );
+
   return (
     <div
       className="desktop-root"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
-          setSelectedIcon(null);
-        }
+        if (e.target === e.currentTarget) setSelectedIcon(null);
         closeMenus();
       }}
       onContextMenu={handleDesktopCtx}
@@ -446,7 +496,14 @@ export default function Desktop({ onShutdown }: DesktopProps) {
 
       {/* ── Open Windows ──────────────────────────────────────── */}
       {openWindows.map((win) => {
-        const { title, Icon, width, height } = WINDOW_CONFIG[win.id];
+        const config = WINDOW_CONFIG[win.id];
+        // Show project name in titlebar when a project is loaded
+        const title =
+          win.id === "project-detail" && activeProject
+            ? activeProject.name
+            : config.title;
+        const { Icon, width, height } = config;
+
         return (
           <OsWindow
             key={win.id}
@@ -466,7 +523,7 @@ export default function Desktop({ onShutdown }: DesktopProps) {
             className={win.id === "wolfenstein" ? "os-win-game" : ""}
           >
             <Suspense fallback={<WindowLoadingFallback />}>
-              {renderWindowContent(win.id, openWindow)}
+              {renderWindowContent(win.id)}
             </Suspense>
           </OsWindow>
         );
@@ -474,7 +531,6 @@ export default function Desktop({ onShutdown }: DesktopProps) {
 
       {/* ── Taskbar ───────────────────────────────────────────── */}
       <header className="header os-taskbar">
-        {/* Start button */}
         <button
           className={`btn logo os-start-btn${startOpen ? " start-active" : ""}`}
           onClick={(e) => {
@@ -490,9 +546,13 @@ export default function Desktop({ onShutdown }: DesktopProps) {
 
         <div className="os-taskbar-sep" />
 
-        {/* Taskbar window buttons */}
         {openWindows.map((win) => {
-          const { title, Icon } = WINDOW_CONFIG[win.id];
+          const config = WINDOW_CONFIG[win.id];
+          const title =
+            win.id === "project-detail" && activeProject
+              ? activeProject.name
+              : config.title;
+          const { Icon } = config;
           const isActive = activeId === win.id && !win.minimized;
           return (
             <button
@@ -511,10 +571,7 @@ export default function Desktop({ onShutdown }: DesktopProps) {
           );
         })}
 
-        {/* Pushes system tray to the right */}
         <div className="os-taskbar-spacer" />
-
-        {/* System tray — clock */}
         <div className="os-taskbar-clock">
           <Clock />
         </div>
@@ -563,9 +620,7 @@ export default function Desktop({ onShutdown }: DesktopProps) {
                 </div>
               )}
             </div>
-
             <div className="start-menu-sep" />
-
             <div
               className="start-menu-item"
               onMouseEnter={() => setProgOpen(false)}
