@@ -1,4 +1,6 @@
-const projects = [
+import { ProjectData } from "./ProjectDetailWindow";
+
+const projects: (ProjectData & { url: string })[] = [
   {
     name: "RetroOS Portfolio",
     url: "github.com/Engineernoob/taahirah.exe",
@@ -39,9 +41,23 @@ const projects = [
     tech: ["TypeScript", "Express", "Prisma", "PostgreSQL"],
     icon: "⏿",
   },
+  {
+    name: "AI Knowledge Agent",
+    url: "github.com/Engineernoob/ai-knowledge-agent",
+    description:
+      "A responsive AI chatbot with light/dark mode toggle, collapsible side nav, and a conversational interface for asking questions. React frontend backed by a Flask AI layer.",
+    tech: ["React", "Chakra UI", "Python", "Flask"],
+    icon: "🤖",
+    githubUrl: "https://github.com/Engineernoob/ai-knowledge-agent",
+    status: "Completed",
+  },
 ];
 
-export default function ProjectsWindow() {
+interface ProjectsWindowProps {
+  onOpenProject?: (project: ProjectData) => void;
+}
+
+export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
   return (
     <div
       style={{
@@ -65,17 +81,17 @@ export default function ProjectsWindow() {
         }}
       >
         <span style={{ fontSize: 11, color: "#555" }}>
-          {projects.length} items
+          {projects.length} items — double-click a project to open
         </span>
       </div>
 
       {/* ── File list ─────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: "auto", background: "#fff" }}>
-        {/* Column headers — Win95 Explorer style */}
+        {/* Column headers */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "28px 1fr 120px",
+            gridTemplateColumns: "28px 1fr 110px 80px",
             padding: "2px 12px",
             background: "var(--color-gray-200)",
             borderBottom: "1px solid var(--color-gray-300)",
@@ -84,17 +100,16 @@ export default function ProjectsWindow() {
             zIndex: 1,
           }}
         >
-          {["", "Name / Description", "Tech"].map((h, i) => (
+          {["", "Name / Description", "Tech", "Status"].map((h, i) => (
             <div
               key={i}
               style={{
                 fontSize: 11,
                 color: "#000",
                 padding: "2px 4px",
-                fontFamily: "Tahoma, Arial, sans-serif",
                 boxShadow: "var(--shadow-outer-3)",
                 userSelect: "none",
-                cursor: "default",
+                fontFamily: "Tahoma, Arial, sans-serif",
               }}
             >
               {h}
@@ -107,7 +122,7 @@ export default function ProjectsWindow() {
             key={i}
             style={{
               display: "grid",
-              gridTemplateColumns: "28px 1fr 120px",
+              gridTemplateColumns: "28px 1fr 110px 80px",
               padding: "6px 12px",
               borderBottom: "1px solid var(--color-gray-100)",
               alignItems: "start",
@@ -125,13 +140,12 @@ export default function ProjectsWindow() {
                 e.currentTarget.querySelectorAll<HTMLElement>("[data-text]"),
               ).forEach((el) => (el.style.color = ""));
             }}
+            onDoubleClick={() => onOpenProject?.(proj)}
           >
-            {/* Icon */}
             <span style={{ fontSize: 18, lineHeight: 1, paddingTop: 1 }}>
               {proj.icon}
             </span>
 
-            {/* Name + description */}
             <div style={{ paddingRight: 12 }}>
               <div
                 style={{
@@ -170,7 +184,6 @@ export default function ProjectsWindow() {
               </p>
             </div>
 
-            {/* Tech stack */}
             <div
               style={{
                 display: "flex",
@@ -179,7 +192,7 @@ export default function ProjectsWindow() {
                 paddingTop: 2,
               }}
             >
-              {proj.tech.map((t) => (
+              {proj.tech.slice(0, 3).map((t) => (
                 <span
                   key={t}
                   style={{
@@ -188,7 +201,6 @@ export default function ProjectsWindow() {
                     border: "1px solid var(--color-blue)",
                     padding: "0 4px",
                     background: "#fff",
-                    fontFamily: "Tahoma, Arial, sans-serif",
                     whiteSpace: "nowrap",
                     display: "inline-block",
                   }}
@@ -196,6 +208,31 @@ export default function ProjectsWindow() {
                   {t}
                 </span>
               ))}
+              {proj.tech.length > 3 && (
+                <span style={{ fontSize: 10, color: "#888" }}>
+                  +{proj.tech.length - 3} more
+                </span>
+              )}
+            </div>
+
+            <div style={{ paddingTop: 2 }}>
+              <span
+                style={{
+                  fontSize: 9,
+                  padding: "1px 6px",
+                  background:
+                    proj.status === "Live"
+                      ? "#1a4a8b"
+                      : proj.status === "Ongoing"
+                        ? "#5a3a00"
+                        : "#1a5a1a",
+                  color: "#fff",
+                  letterSpacing: "0.06em",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {proj.status}
+              </span>
             </div>
           </div>
         ))}
@@ -213,7 +250,7 @@ export default function ProjectsWindow() {
           boxShadow: "inset 0 1px 0 #fff",
         }}
       >
-        {projects.length} object(s)
+        {projects.length} object(s) · Double-click any row to view details
       </div>
     </div>
   );
