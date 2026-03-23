@@ -1,4 +1,4 @@
-import { ProjectData } from "./ProjectDetailWindow";
+import type { ProjectData } from "./ProjectDetailWindow";
 
 const projects: (ProjectData & { url: string })[] = [
   {
@@ -6,18 +6,21 @@ const projects: (ProjectData & { url: string })[] = [
     url: "github.com/Engineernoob/taahirah.exe",
     description:
       "An interactive portfolio website styled as a retro operating system with draggable windows, BIOS boot screen, and Win95 chrome.",
-    tech: ["React", "TypeScript", "CSS"],
+    tech: ["React", "TypeScript", "Three.js", "Vite", "CSS"],
     icon: "🖥️",
-    status: "Live"
+    githubUrl: "https://github.com/Engineernoob/taahirah.exe",
+    liveUrl: "https://taahirah-exe.vercel.app",
+    status: "Live",
   },
   {
     name: "Noir - Terminal IDE",
-    url: "https://github.com/Engineernoob/Noir",
+    url: "github.com/Engineernoob/Noir",
     description:
       "Noir is a terminal-based IDE for developers who prefer a minimalist, keyboard-driven coding environment. It features a built-in file explorer, code editor with syntax highlighting, and Git integration.",
     tech: ["Rust", "TUI", "Git"],
     icon: "🕶️",
-    status: "In-Progress"
+    githubUrl: "https://github.com/Engineernoob/Noir",
+    status: "In-Progress",
   },
   {
     name: "PatchPilot",
@@ -26,35 +29,40 @@ const projects: (ProjectData & { url: string })[] = [
       "Open-source AI support engineer for debugging apps, ranking root causes, and generating patch-ready fixes from logs, stack traces, and bug reports.",
     tech: ["Python", "Machine Learning", "NLP", "Ollama"],
     icon: "🩹",
-    status: "In-Progress"
+    githubUrl: "https://github.com/Engineernoob/patchpilot",
+    status: "In-Progress",
   },
   {
     name: "StackTrace AI",
     url: "github.com/Engineernoob/stacktrace-ai",
     description:
-      "a developer tool that analyzes stack traces and converts them into clear explanations with suggested fixes, leveraging AI to help developers quickly understand and resolve errors in their code.",
+      "A developer tool that analyzes stack traces and converts them into clear explanations with suggested fixes, leveraging AI to help developers quickly understand and resolve errors in their code.",
     tech: ["Python", "Machine Learning", "NLP", "Ollama"],
     icon: "📚",
-    status: "In-Progress"
+    githubUrl: "https://github.com/Engineernoob/stacktrace-ai",
+    status: "Live",
   },
   {
     name: "OpsHub API",
     url: "github.com/Engineernoob/OpsHub",
     description:
-      "Production-ready REST API built with TypeScript, Express, Prisma, and PostgreSQL. It provides endpoints for user authentication, project management, and AI-assisted debugging features, serving as the backend for the PatchPilot support engineer tool.",
+      "Production-ready REST API built with TypeScript, Express, Prisma, and PostgreSQL. Provides endpoints for user authentication, project management, and AI-assisted debugging features — serving as the backend for PatchPilot.",
     tech: ["TypeScript", "Express", "Prisma", "PostgreSQL"],
-    icon: "⏿",
-    status: "Live"
+    icon: "⚙️",
+    githubUrl: "https://github.com/Engineernoob/OpsHub",
+    liveUrl: "https://opshub-api.onrender.com/",
+    status: "Live",
   },
   {
-    name: "AI Knowledge Agent",
-    url: "github.com/Engineernoob/ai-knowledge-agent",
+    name: "PromptDiff",
+    url: "github.com/Engineernoob/PromptDiff",
     description:
-      "A responsive AI chatbot with light/dark mode toggle, collapsible side nav, and a conversational interface for asking questions. React frontend backed by a Flask AI layer.",
-    tech: ["React", "Chakra UI", "Python", "Flask"],
+      "Prompt Diff is a lightweight web tool that analyzes how changes between two prompts impact an LLM’s behavior. Instead of focusing on surface-level text differences, it highlights meaningful behavioral shifts that affect cost, reliability, and model safety.",
+    tech: [" FastAPI", "Jinja2", "Python"],
     icon: "🤖",
-    githubUrl: "https://github.com/Engineernoob/ai-knowledge-agent",
-    status: "Completed",
+    githubUrl: "https://github.com/Engineernoob/PromptDiff",
+    liveUrl: "https://promptdiff.onrender.com/",
+    status: "Live",
   },
 ];
 
@@ -96,7 +104,7 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "28px 1fr 110px 80px",
+            gridTemplateColumns: "28px 1fr 120px 85px",
             padding: "2px 12px",
             background: "var(--color-gray-200)",
             borderBottom: "1px solid var(--color-gray-300)",
@@ -127,7 +135,7 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
             key={i}
             style={{
               display: "grid",
-              gridTemplateColumns: "28px 1fr 110px 80px",
+              gridTemplateColumns: "28px 1fr 120px 85px",
               padding: "6px 12px",
               borderBottom: "1px solid var(--color-gray-100)",
               alignItems: "start",
@@ -147,10 +155,12 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
             }}
             onDoubleClick={() => onOpenProject?.(proj)}
           >
+            {/* Icon */}
             <span style={{ fontSize: 18, lineHeight: 1, paddingTop: 1 }}>
               {proj.icon}
             </span>
 
+            {/* Name + description */}
             <div style={{ paddingRight: 12 }}>
               <div
                 style={{
@@ -189,6 +199,7 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
               </p>
             </div>
 
+            {/* Tech stack — first 3 + overflow count */}
             <div
               style={{
                 display: "flex",
@@ -206,6 +217,7 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
                     border: "1px solid var(--color-blue)",
                     padding: "0 4px",
                     background: "#fff",
+                    fontFamily: "Tahoma, Arial, sans-serif",
                     whiteSpace: "nowrap",
                     display: "inline-block",
                   }}
@@ -220,6 +232,7 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
               )}
             </div>
 
+            {/* Status badge */}
             <div style={{ paddingTop: 2 }}>
               <span
                 style={{
@@ -228,8 +241,8 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
                   background:
                     proj.status === "Live"
                       ? "#1a4a8b"
-                      : proj.status === "Ongoing"
-                        ? "#5a3a00"
+                      : proj.status === "In-Progress"
+                        ? "#7a3a00"
                         : "#1a5a1a",
                   color: "#fff",
                   letterSpacing: "0.06em",
