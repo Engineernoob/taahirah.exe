@@ -885,6 +885,9 @@ function addPoster(
     roughness: 0.85,
     metalness: 0,
     side: THREE.FrontSide,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1,
   });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(px, py, pz);
@@ -930,7 +933,7 @@ function addPoster(
     depthWrite: false,
   });
   const shadow = new THREE.Mesh(shadowGeo, shadowMat);
-  shadow.position.set(px + 0.014, py - 0.012, pz - 0.003);
+  shadow.position.set(px + 0.014, py - 0.012, pz + 0.001);
   shadow.rotation.set(tiltX, ry, tiltZ);
   scene.add(shadow);
 }
@@ -947,21 +950,30 @@ function buildScene(): SceneObjects {
   scene.background = new THREE.Color("#050508");
   scene.fog = new THREE.Fog("#050508", 9, 22);
 
-  const ambient = new THREE.AmbientLight("#b0a898", 0.55); // warmer, brighter for white walls
+  const ambient = new THREE.AmbientLight("#c8b89a", 1.1);
   scene.add(ambient);
 
-  const dirLight = new THREE.DirectionalLight("#ffe8c8", 1.4);
-  dirLight.position.set(4, 8, 4);
+  const dirLight = new THREE.DirectionalLight("#ffe8c8", 1.8);
+  dirLight.position.set(3, 10, 5);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.set(2048, 2048);
   scene.add(dirLight);
 
-  const screenGlow = new THREE.PointLight("#22cc44", 2.0, 7.0);
-  screenGlow.position.set(0.1, 1.7, 0.18);
+  // Fill light from the left to brighten the desk surface
+  const fillLight = new THREE.DirectionalLight("#ffe0b0", 0.9);
+  fillLight.position.set(-4, 4, 3);
+  scene.add(fillLight);
+
+  // Desk key light — aimed down at the desk to kill the dark bottom
+  const deskLight = new THREE.PointLight("#fff5e0", 1.2, 6);
+  deskLight.position.set(0, 2.8, 1.2);
+  scene.add(deskLight);
+
+  // screenGlow and lampGlow are added after monitors are built below
+  const screenGlow = new THREE.PointLight("#22cc44", 1.8, 5.5);
   scene.add(screenGlow);
 
-  const lampGlow = new THREE.PointLight("#ffe8a0", 0.7, 2.2);
-  lampGlow.position.set(1.08, 1.52, -0.38);
+  const lampGlow = new THREE.PointLight("#1a3a6a", 0.7, 4.0);
   scene.add(lampGlow);
 
   const accentLight = new THREE.PointLight("#4060ff", 0.35, 9);
@@ -1003,10 +1015,14 @@ function buildScene(): SceneObjects {
     return m;
   };
 
-  const wood = mat("#5c3418", 0.82, 0);
+  // ── Materials ─────────────────────────────────────────────────────────────
+  // Dark walnut desk — lighter so it reads as walnut not black
+  const walnut = mat("#3d2210", 0.72, 0);
+  const walnutEdge = mat("#2a1608", 0.78, 0);
   const charcoal = mat("#1a1a1a", 0.9, 0);
-  const darkGrey = mat("#252525", 0.6, 0.1);
-  const ivory = mat("#d8d0bc", 0.9, 0);
+  const mattBlack = mat("#141414", 0.55, 0.15);
+  const darkGrey = mat("#1e1e1e", 0.5, 0.2);
+  const metalDark = mat("#222222", 0.35, 0.75);
 
   // ── Floor ─────────────────────────────────────────────────────────────────
   const floor = new THREE.Mesh(
@@ -1019,10 +1035,9 @@ function buildScene(): SceneObjects {
   scene.add(floor);
 
   // ── Walls — eggshell white ────────────────────────────────────────────────
-  // Eggshell: warm off-white, slightly creamy, not pure white
   const wallColor = "#e8e0d0";
   const sideWallColor = "#e2dace";
-  add(box(20, 10, 0.14), mat(wallColor, 0.92, 0), 0, 5, -4); // back wall
+  add(box(20, 10, 0.14), mat(wallColor, 0.92, 0), 0, 5, -4);
   add(
     box(12, 10, 0.14),
     mat(sideWallColor, 0.92, 0),
@@ -1032,172 +1047,504 @@ function buildScene(): SceneObjects {
     0,
     Math.PI / 2,
     0,
-  ); // side wall
+  );
 
-  // ── Desk ──────────────────────────────────────────────────────────────────
-  add(box(2.8, 0.07, 1.6), wood, 0, 0.82, 0.3);
-  add(box(2.8, 0.12, 0.06), wood, 0, 0.78, 1.08);
-  add(box(0.06, 0.85, 1.6), wood, -1.37, 0.42, 0.3);
-  add(box(0.06, 0.85, 1.6), wood, 1.37, 0.42, 0.3);
-  add(box(2.68, 0.85, 0.06), wood, 0, 0.42, -0.47);
-  add(box(0.58, 0.7, 1.35), charcoal, -0.8, 0.42, 0.3);
-  add(box(0.58, 0.7, 1.35), charcoal, 0.8, 0.42, 0.3);
+  // ── Upgraded Desk — dark walnut, wide L-ish surface, metal legs ───────────
+  // Main surface — wider and deeper for dual monitor setup
+  const DESK_W = 3.6,
+    DESK_D = 1.7,
+    DESK_Y = 0.82;
+  add(box(DESK_W, 0.055, DESK_D), walnut, 0, DESK_Y, 0.22);
+  // Front apron
+  add(box(DESK_W, 0.06, 0.04), walnutEdge, 0, DESK_Y - 0.058, 1.04);
+  // Rear cable management bar
+  add(box(DESK_W, 0.04, 0.035), mattBlack, 0, DESK_Y - 0.04, -0.61);
+  // Four sleek square metal legs
+  const legMat = mat("#1a1a1a", 0.4, 0.7);
+  const legPositions: [number, number][] = [
+    [-1.72, -0.61],
+    [1.72, -0.61],
+    [-1.72, 1.0],
+    [1.72, 1.0],
+  ];
+  legPositions.forEach(([lx, lz]) => {
+    add(box(0.055, DESK_Y, 0.055), legMat, lx, DESK_Y / 2, lz);
+    // Foot pad
+    add(box(0.075, 0.012, 0.075), mat("#111", 0.9, 0), lx, 0.006, lz);
+  });
+  // Under-desk drawer unit (right side)
+  add(box(0.52, 0.46, 0.52), mattBlack, 1.5, 0.3, 0.28);
+  add(box(0.48, 0.008, 0.5), mat("#2a2a2a", 0.6, 0.3), 1.5, 0.535, 0.28); // drawer top cap
+  // Drawer handle
+  add(box(0.18, 0.012, 0.012), mat("#333", 0.4, 0.7), 1.5, 0.3, 0.555);
 
-  // ── Monitor ───────────────────────────────────────────────────────────────
-  add(box(0.38, 0.04, 0.32), darkGrey, 0.1, 0.87, -0.05);
-  add(box(0.07, 0.42, 0.07), darkGrey, 0.1, 1.08, -0.05);
+  // ── Dual Monitors — matte black, slim bezels, proper stands ──────────────
+  const standMat = mat("#111111", 0.45, 0.55);
+
+  const DESK_TOP = DESK_Y + 0.0275;
+  const BEZEL_H = 0.52; // monitor panel height
+  const BEZEL_W = 0.9; // monitor panel width
+  const BEZEL_D = 0.045; // monitor depth
+  // Raise monitor so stand neck is visible below it
+  const MON_Y = DESK_TOP + 0.38; // centre height — leaves ~12cm gap under panel
+  const MON_Z = -0.15; // monitor Z centre
+  const MON_FRONT_Z = MON_Z + BEZEL_D / 2; // front face
+  const MON_BACK_Z = MON_Z - BEZEL_D / 2; // back face
+  const MON_BOT_Y = MON_Y - BEZEL_H / 2; // bottom edge of panel
+
+  // Stand geometry — think of a real Dell/LG monitor stand:
+  // 1. Wide flat base on desk, centred behind-and-under the monitor
+  // 2. Short thick neck rising from base up to underside of monitor
+  // 3. A small hinge/mount bracket at the top connecting neck to VESA
+  const BASE_Z = MON_BACK_Z - 0.08; // base centred just behind panel
+  const NECK_H = MON_BOT_Y - DESK_TOP; // neck fills gap from desk to panel bottom
+  const NECK_MID_Y = DESK_TOP + NECK_H / 2;
+  const NECK_Z = MON_BACK_Z - 0.01; // neck flush against panel back
+
+  const buildStand = (mx: number) => {
+    // Base: wide flat foot pad visible from front
+    add(box(0.38, 0.02, 0.3), standMat, mx, DESK_TOP + 0.01, BASE_Z);
+    add(box(0.24, 0.03, 0.18), standMat, mx, DESK_TOP + 0.025, BASE_Z);
+    // Neck: rises from base to bottom of panel, behind the bezel
+    add(box(0.06, NECK_H, 0.04), standMat, mx, NECK_MID_Y, NECK_Z);
+    // Hinge bracket at top of neck — wider block that spreads into VESA
+    add(
+      box(0.09, 0.06, 0.055),
+      standMat,
+      mx,
+      MON_BOT_Y + 0.03,
+      MON_BACK_Z - 0.025,
+    );
+    // VESA plate on panel back
+    add(box(0.13, 0.1, 0.014), standMat, mx, MON_Y - 0.08, MON_BACK_Z - 0.007);
+  };
+
+  // ── Left monitor ──────────────────────────────────────────────────────────
+  const lMonX = -0.88;
+  buildStand(lMonX);
+
+  const lMonGrp = new THREE.Group();
+  lMonGrp.position.set(lMonX, MON_Y, MON_Z);
+  lMonGrp.rotation.x = 0.05;
+  scene.add(lMonGrp);
+
+  // Outer bezel
+  const lBezel = new THREE.Mesh(box(0.96, BEZEL_H, BEZEL_D), mattBlack);
+  lBezel.castShadow = true;
+  lMonGrp.add(lBezel);
+  // Inner recessed ring
+  const lInnerBezel = new THREE.Mesh(
+    box(BEZEL_W, BEZEL_H - 0.06, 0.01),
+    darkGrey,
+  );
+  lInnerBezel.position.set(0, 0, BEZEL_D / 2 - 0.005);
+  lMonGrp.add(lInnerBezel);
+  // Screen — sits on the FRONT face (+Z side) of bezel
+  const lScreenC = document.createElement("canvas");
+  lScreenC.width = 512;
+  lScreenC.height = 300;
+  const lCtx = lScreenC.getContext("2d")!;
+  lCtx.fillStyle = "#0d1117";
+  lCtx.fillRect(0, 0, 512, 300);
+  lCtx.fillStyle = "#161b22";
+  lCtx.fillRect(0, 0, 80, 300);
+  lCtx.fillStyle = "#1f2937";
+  lCtx.fillRect(80, 0, 432, 22);
+  lCtx.fillStyle = "#58a6ff";
+  lCtx.fillRect(82, 3, 80, 16);
+  lCtx.fillStyle = "#f8f8f2";
+  lCtx.font = "bold 9px 'Courier New'";
+  lCtx.fillText("LandingScene.tsx", 86, 14);
+  const codeLines = [
+    { col: "#ff7b72", t: "function buildScene() {" },
+    { col: "#8b949e", t: "  // dark walnut desk" },
+    { col: "#79c0ff", t: "  const walnut = mat('#3d2210');" },
+    { col: "#e3b341", t: "  const monitors = dualSetup();" },
+    { col: "#79c0ff", t: "  const chair = highBack();" },
+    { col: "#f8f8f2", t: "  addPosters(scene);" },
+    { col: "#8b949e", t: "  // eggshell walls ✓" },
+    { col: "#f8f8f2", t: "}" },
+  ];
+  codeLines.forEach((l, i) => {
+    lCtx.fillStyle = l.col;
+    lCtx.font = "11px 'Courier New'";
+    lCtx.fillText(l.t, 88, 48 + i * 22);
+  });
+  for (let ln = 0; ln < 10; ln++) {
+    lCtx.fillStyle = "#3d444d";
+    lCtx.font = "10px monospace";
+    lCtx.fillText(String(ln + 1).padStart(2), 58, 48 + ln * 22);
+  }
+  lCtx.fillStyle = "rgba(0,0,0,0.08)";
+  for (let sy = 0; sy < 300; sy += 3) lCtx.fillRect(0, sy, 512, 1);
+  const lScreenTex = new THREE.CanvasTexture(lScreenC);
+  lScreenTex.needsUpdate = true;
+  const lScreen = new THREE.Mesh(
+    box(0.86, 0.48, 0.002),
+    new THREE.MeshBasicMaterial({ map: lScreenTex }),
+  );
+  // Place screen flush on front face of bezel
+  lScreen.position.set(0, 0, BEZEL_D / 2 + 0.001);
+  lMonGrp.add(lScreen);
+  // Power LED bottom-right corner
+  const lLed = new THREE.Mesh(
+    new THREE.SphereGeometry(0.005, 6, 6),
+    new THREE.MeshBasicMaterial({ color: "#00ff88" }),
+  );
+  lLed.position.set(0.43, -0.27, BEZEL_D / 2);
+  lMonGrp.add(lLed);
+  lampGlow.position.set(lMonX, MON_Y, MON_Z + 0.5);
+
+  // ── Right monitor — BIOS animated screen ──────────────────────────────────
+  const rMonX = 0.88;
+  buildStand(rMonX);
+  screenGlow.position.set(rMonX, MON_Y, MON_Z + 0.5);
 
   const monGrp = new THREE.Group();
-  monGrp.position.set(0.1, 1.55, -0.07);
-  monGrp.rotation.x = 0.06;
+  monGrp.position.set(rMonX, MON_Y, MON_Z);
+  monGrp.rotation.x = 0.05; // same slight backward tilt, NO Y-rotation
   scene.add(monGrp);
 
-  const bezel = new THREE.Mesh(box(0.88, 0.72, 0.22), darkGrey);
+  const bezel = new THREE.Mesh(box(0.96, BEZEL_H, BEZEL_D), mattBlack);
   bezel.castShadow = true;
   monGrp.add(bezel);
-
-  const innerBezel = new THREE.Mesh(box(0.76, 0.6, 0.04), charcoal);
-  innerBezel.position.set(0, 0, 0.095);
+  const innerBezel = new THREE.Mesh(
+    box(BEZEL_W, BEZEL_H - 0.06, 0.01),
+    darkGrey,
+  );
+  innerBezel.position.set(0, 0, BEZEL_D / 2 - 0.005);
   monGrp.add(innerBezel);
-
   const { tex: screenTex, update: updateScreen } = makeScreenUpdater();
-  const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
-  const screen = new THREE.Mesh(box(0.7, 0.54, 0.005), screenMat);
-  screen.position.set(0, 0, 0.115);
+  screenTex.needsUpdate = true;
+  const screen = new THREE.Mesh(
+    box(0.86, 0.48, 0.002),
+    new THREE.MeshBasicMaterial({ map: screenTex }),
+  );
+  screen.position.set(0, 0, BEZEL_D / 2 + 0.001);
   monGrp.add(screen);
+  const rLed = new THREE.Mesh(
+    new THREE.SphereGeometry(0.005, 6, 6),
+    new THREE.MeshBasicMaterial({ color: "#00ff88" }),
+  );
+  rLed.position.set(0.43, -0.27, BEZEL_D / 2);
+  monGrp.add(rLed);
 
-  const btnMat = mat("#151515", 0.9, 0);
-  for (let i = 0; i < 2; i++) {
-    const btn = new THREE.Mesh(cyl(0.012, 0.012, 0.015, 8), btnMat);
-    btn.position.set(0.3 - i * 0.06, -0.28, 0.112);
-    btn.rotation.x = Math.PI / 2;
-    monGrp.add(btn);
-  }
-
-  // ── Keyboard ──────────────────────────────────────────────────────────────
+  // ── Mechanical Keyboard — centered on desk mat ────────────────────────────
   const kbdGrp = new THREE.Group();
-  kbdGrp.position.set(0.05, 0.895, 0.48);
+  kbdGrp.position.set(0.0, DESK_TOP + 0.005, 0.55);
+  kbdGrp.rotation.y = 0.0;
   scene.add(kbdGrp);
-  const kbdBase = new THREE.Mesh(box(0.62, 0.025, 0.22), ivory);
+
+  const kbdBase = new THREE.Mesh(box(0.72, 0.032, 0.26), mattBlack);
   kbdBase.castShadow = true;
   kbdGrp.add(kbdBase);
-  for (const z of [-0.08, -0.025, 0.03, 0.082]) {
-    const row = new THREE.Mesh(box(0.56, 0.005, 0.038), charcoal);
-    row.position.set(0, 0.015, z);
-    kbdGrp.add(row);
-  }
-  const spacebar = new THREE.Mesh(box(0.22, 0.005, 0.036), charcoal);
-  spacebar.position.set(0.02, 0.015, 0.082);
-  kbdGrp.add(spacebar);
 
-  // ── Mouse + pad ───────────────────────────────────────────────────────────
-  add(box(0.09, 0.035, 0.14), mat("#c0b8a8", 0.8, 0), 0.72, 0.895, 0.48);
-  add(box(0.28, 0.003, 0.32), charcoal, 0.72, 0.878, 0.48);
+  const kbdPcb = new THREE.Mesh(box(0.68, 0.01, 0.22), mat("#141414", 0.8, 0));
+  kbdPcb.position.set(0, 0.021, -0.005);
+  kbdGrp.add(kbdPcb);
 
-  // ── Coffee mug ────────────────────────────────────────────────────────────
+  // Draw keycap texture on canvas
+  const kcCanvas = document.createElement("canvas");
+  kcCanvas.width = 512;
+  kcCanvas.height = 192;
+  const kcCtx = kcCanvas.getContext("2d")!;
+  kcCtx.fillStyle = "#111111";
+  kcCtx.fillRect(0, 0, 512, 192);
+  // Key rows — 5 rows, each key is a rounded rect
+  const rows = [
+    { y: 8, keys: 14, w: 34, gap: 2, offsetX: 4 }, // number row
+    { y: 54, keys: 14, w: 34, gap: 2, offsetX: 24 }, // QWERTY
+    { y: 100, keys: 13, w: 36, gap: 2, offsetX: 34 }, // ASDF
+    { y: 146, keys: 12, w: 38, gap: 2, offsetX: 50 }, // ZXCV
+  ];
+  const legends = ["1234567890-=", "QWERTYUIOP[]", "ASDFGHJKL;'", "ZXCVBNM,./"];
+  rows.forEach((row, ri) => {
+    for (let k = 0; k < row.keys; k++) {
+      const kx = row.offsetX + k * (row.w + row.gap);
+      // Key body
+      kcCtx.fillStyle = "#1e1e1e";
+      kcCtx.beginPath();
+      kcCtx.roundRect(kx, row.y, row.w, 38, 3);
+      kcCtx.fill();
+      // Key top face (slightly lighter, gives height illusion)
+      kcCtx.fillStyle = "#2a2a2a";
+      kcCtx.beginPath();
+      kcCtx.roundRect(kx + 2, row.y + 2, row.w - 4, 30, 2);
+      kcCtx.fill();
+      // White legend
+      const leg = legends[ri]?.[k];
+      if (leg) {
+        kcCtx.fillStyle = "#e8e8e8";
+        kcCtx.font = "bold 11px 'Courier New', monospace";
+        kcCtx.textAlign = "center";
+        kcCtx.fillText(leg, kx + row.w / 2, row.y + 21);
+      }
+    }
+  });
+  // Spacebar
+  kcCtx.fillStyle = "#1e1e1e";
+  kcCtx.beginPath();
+  kcCtx.roundRect(140, 150, 200, 38, 3);
+  kcCtx.fill();
+  kcCtx.fillStyle = "#2a2a2a";
+  kcCtx.beginPath();
+  kcCtx.roundRect(143, 152, 194, 30, 2);
+  kcCtx.fill();
+  kcCtx.textAlign = "left";
+
+  const kcTex = new THREE.CanvasTexture(kcCanvas);
+  const kcPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.66, 0.22),
+    new THREE.MeshBasicMaterial({ map: kcTex }),
+  );
+  kcPlane.rotation.x = -Math.PI / 2;
+  kcPlane.position.set(0, 0.028, -0.005);
+  kbdGrp.add(kcPlane);
+
+  // USB-C cable from keyboard
+  add(
+    box(0.006, 0.006, 0.1),
+    mat("#1a1a1a", 0.9, 0),
+    0.32,
+    DESK_TOP + 0.018,
+    0.44,
+  );
+
+  // ── Premium Mouse — right of keyboard ─────────────────────────────────────
+  const mouseX = 0.55,
+    mouseY = DESK_TOP + 0.018,
+    mouseZ = 0.52;
+  // Mouse body — ergonomic shape using scaled sphere
+  const mouseBodyGeo = new THREE.SphereGeometry(0.052, 12, 10);
+  const mouseBody = new THREE.Mesh(mouseBodyGeo, mattBlack);
+  mouseBody.scale.set(1, 0.42, 1.4);
+  mouseBody.position.set(mouseX, mouseY, mouseZ);
+  mouseBody.castShadow = true;
+  scene.add(mouseBody);
+  // Left/right click split line
+  add(
+    box(0.003, 0.012, 0.072),
+    mat("#0a0a0a", 0.9, 0),
+    mouseX,
+    mouseY + 0.018,
+    mouseZ - 0.02,
+  );
+  // Scroll wheel
+  add(
+    cyl(0.009, 0.009, 0.038, 10),
+    mat("#333333", 0.5, 0.3),
+    mouseX,
+    mouseY + 0.024,
+    mouseZ - 0.01,
+    0,
+    0,
+    Math.PI / 2,
+  );
+  // Side buttons
+  add(
+    box(0.008, 0.012, 0.028),
+    mat("#1a1a1a", 0.8, 0),
+    mouseX - 0.054,
+    mouseY + 0.005,
+    mouseZ - 0.01,
+  );
+  // Mouse logo dot (subtle)
+  add(
+    new THREE.SphereGeometry(0.005, 6, 6),
+    mat("#222222", 0.4, 0.5),
+    mouseX,
+    mouseY + 0.024,
+    mouseZ + 0.03,
+  );
+
+  // ── Large desk mat — black, covers center of desk ─────────────────────────
+  add(
+    box(1.6, 0.003, 0.75),
+    mat("#0a0a0a", 0.98, 0),
+    0.18,
+    DESK_TOP + 0.002,
+    0.5,
+  );
+  add(
+    box(1.6, 0.003, 0.01),
+    mat("#1a1a1a", 0.9, 0),
+    0.18,
+    DESK_TOP + 0.003,
+    0.12,
+  );
+  add(
+    box(1.6, 0.003, 0.01),
+    mat("#1a1a1a", 0.9, 0),
+    0.18,
+    DESK_TOP + 0.003,
+    0.87,
+  );
+
+  // ── Coffee mug — left of keyboard ─────────────────────────────────────────
   const mugMat = mat("#e8d5b0", 0.8, 0);
-  add(cyl(0.065, 0.055, 0.13, 12), mugMat, -0.88, 0.958, -0.05);
-  const torusGeo = new THREE.TorusGeometry(0.038, 0.012, 6, 12, Math.PI);
+  add(cyl(0.055, 0.048, 0.11, 12), mugMat, -0.62, DESK_TOP + 0.062, 0.52);
+  const torusGeo = new THREE.TorusGeometry(0.033, 0.01, 6, 12, Math.PI);
   const handle = new THREE.Mesh(torusGeo, mugMat);
-  handle.position.set(-0.798, 0.958, -0.05);
+  handle.position.set(-0.562, DESK_TOP + 0.062, 0.52);
   handle.rotation.set(0, 0, Math.PI / 2);
   scene.add(handle);
-  add(cyl(0.058, 0.058, 0.005, 12), mat("#0a0704", 0.9, 0), -0.88, 1.02, -0.05);
+  add(
+    cyl(0.048, 0.048, 0.005, 12),
+    mat("#0a0704", 0.9, 0),
+    -0.62,
+    DESK_TOP + 0.114,
+    0.52,
+  );
 
-  // ── Books ─────────────────────────────────────────────────────────────────
+  // ── Books stacked — left rear corner of desk ───────────────────────────────
   const bookColors = ["#8b1a1a", "#1a4a8b", "#1a6a2a"];
-  const bookH = [0.03, 0.025, 0.02];
+  const bookH = [0.028, 0.022, 0.018];
   let by = 0;
   for (let i = 0; i < 3; i++) {
     add(
-      box(0.22 - i * 0.01, bookH[i], 0.16),
+      box(0.2 - i * 0.01, bookH[i], 0.15),
       mat(bookColors[i], 0.9, 0),
-      -0.88,
-      0.895 + by + bookH[i] / 2,
-      0.25,
+      -1.1,
+      DESK_TOP + 0.002 + by + bookH[i] / 2,
+      0.1,
     );
     by += bookH[i];
   }
 
-  // ── Plant ─────────────────────────────────────────────────────────────────
+  // ── Plant — far right rear corner ─────────────────────────────────────────
   const potMat = mat("#8b4513", 0.8, 0);
-  const plantMat = mat("#1a3a1a", 1, 0);
-  add(cyl(0.06, 0.05, 0.1, 10), potMat, 1.05, 0.945, -0.12);
-  add(cyl(0.055, 0.055, 0.008, 10), charcoal, 1.05, 0.998, -0.12);
-  add(cyl(0.01, 0.01, 0.09, 6), plantMat, 1.05, 1.08, -0.12);
-  for (let i = 0; i < 5; i++) {
-    const angle = (i / 5) * Math.PI * 2;
+  const plantMat = mat("#1a4a1a", 1, 0);
+  add(cyl(0.055, 0.045, 0.09, 10), potMat, 1.55, DESK_TOP + 0.052, 0.1);
+  add(cyl(0.05, 0.05, 0.007, 10), charcoal, 1.55, DESK_TOP + 0.098, 0.1);
+  add(cyl(0.009, 0.009, 0.08, 6), plantMat, 1.55, DESK_TOP + 0.178, 0.1);
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2;
     add(
-      box(0.12, 0.005, 0.055),
+      box(0.11, 0.004, 0.048),
       plantMat,
-      1.05 + Math.sin(angle) * 0.075,
-      1.14 + (i % 2) * 0.02,
-      -0.12 + Math.cos(angle) * 0.075,
-      Math.sin(i) * 0.4 - 0.3,
+      1.55 + Math.sin(angle) * 0.065,
+      DESK_TOP + 0.235 + (i % 2) * 0.018,
+      0.1 + Math.cos(angle) * 0.065,
+      Math.sin(i) * 0.35 - 0.28,
       angle,
-      Math.cos(i) * 0.3,
+      Math.cos(i) * 0.25,
     );
   }
 
-  // ── Desk lamp ─────────────────────────────────────────────────────────────
-  add(cyl(0.08, 0.1, 0.025, 10), charcoal, 1.1, 0.873, -0.1);
-  add(box(0.02, 0.38, 0.02), charcoal, 1.1, 1.065, -0.09, 0.25, 0, 0);
-  add(box(0.02, 0.32, 0.02), charcoal, 1.12, 1.36, -0.2, -0.6, 0, 0);
+  // ── Chair — centered behind desk, pulled closer so it's visible ──────────
+  const chairLeather = mat("#0e0e0e", 0.75, 0.05);
+  const chairStitch = mat("#1a1a1a", 0.85, 0);
+  const chairMetal = mat("#1c1c1c", 0.35, 0.8);
+  const cx = 0.0,
+    cz = 1.75; // closer to desk so it's in frame
+
+  // Seat cushion
+  add(box(0.62, 0.08, 0.58), chairLeather, cx, 0.56, cz);
+  add(box(0.58, 0.02, 0.54), chairStitch, cx, 0.602, cz);
+  // Seat frame
+  add(box(0.66, 0.04, 0.62), chairMetal, cx, 0.535, cz);
+
+  // Lower back
+  add(box(0.6, 0.42, 0.08), chairLeather, cx, 0.88, cz - 0.28, -0.1, 0, 0);
+  // Upper back (taller for high-back)
+  add(box(0.58, 0.38, 0.07), chairLeather, cx, 1.26, cz - 0.32, -0.08, 0, 0);
+  // Back frame
+  add(box(0.64, 0.82, 0.04), chairMetal, cx, 1.04, cz - 0.34, -0.09, 0, 0);
+
+  // Lumbar support bulge
   add(
-    new THREE.ConeGeometry(0.09, 0.14, 10, 1, true),
-    charcoal,
-    1.08,
-    1.52,
-    -0.38,
-    0.9,
+    box(0.44, 0.12, 0.03),
+    mat("#141414", 0.8, 0),
+    cx,
+    0.82,
+    cz - 0.31,
+    -0.1,
     0,
     0,
   );
 
-  // ── Chair ─────────────────────────────────────────────────────────────────
-  const chairFabric = mat("#2a2030", 1, 0);
-  const chairFrame = mat("#1c1c1c", 0.8, 0.05);
-  const metal = mat("#555555", 0.3, 0.8);
-  const cx = 0.1,
-    cz = 1.8;
-  add(box(0.58, 0.07, 0.55), chairFabric, cx, 0.58, cz);
-  add(box(0.62, 0.04, 0.58), chairFrame, cx, 0.545, cz);
-  add(box(0.56, 0.55, 0.07), chairFabric, cx, 1.06, cz - 0.27, -0.12, 0, 0);
-  add(box(0.6, 0.58, 0.04), chairFrame, cx, 1.06, cz - 0.31, -0.12, 0, 0);
-  add(box(0.05, 0.06, 0.45), chairFrame, cx - 0.29, 0.8, cz - 0.05);
-  add(box(0.05, 0.06, 0.45), chairFrame, cx + 0.29, 0.8, cz - 0.05);
-  add(cyl(0.045, 0.065, 0.5, 8), metal, cx, 0.25, cz);
-  add(cyl(0.06, 0.06, 0.06, 8), metal, cx, 0.03, cz);
+  // Headrest
+  add(box(0.38, 0.2, 0.07), chairLeather, cx, 1.58, cz - 0.36, -0.06, 0, 0);
+  // Headrest support post
+  add(
+    box(0.025, 0.16, 0.025),
+    chairMetal,
+    cx - 0.12,
+    1.47,
+    cz - 0.33,
+    -0.06,
+    0,
+    0,
+  );
+  add(
+    box(0.025, 0.16, 0.025),
+    chairMetal,
+    cx + 0.12,
+    1.47,
+    cz - 0.33,
+    -0.06,
+    0,
+    0,
+  );
+
+  // Armrests — padded, matte black
+  const armY = 0.72,
+    armZ = cz - 0.06;
+  add(box(0.08, 0.025, 0.32), chairLeather, cx - 0.32, armY, armZ);
+  add(box(0.08, 0.025, 0.32), chairLeather, cx + 0.32, armY, armZ);
+  add(box(0.06, 0.14, 0.06), chairMetal, cx - 0.32, armY - 0.09, armZ + 0.04);
+  add(box(0.06, 0.14, 0.06), chairMetal, cx + 0.32, armY - 0.09, armZ + 0.04);
+
+  // Gas lift cylinder
+  const metal = chairMetal;
+  add(cyl(0.042, 0.058, 0.52, 10), metal, cx, 0.26, cz);
+  add(cyl(0.065, 0.065, 0.055, 10), metal, cx, 0.028, cz);
+  // 5-star base
   for (let i = 0; i < 5; i++) {
     const ang = (i / 5) * Math.PI * 2;
     add(
-      box(0.28, 0.03, 0.04),
+      box(0.32, 0.022, 0.048),
       metal,
-      cx + Math.sin(ang) * 0.28,
-      0.025,
-      cz + Math.cos(ang) * 0.28,
+      cx + Math.sin(ang) * 0.3,
+      0.018,
+      cz + Math.cos(ang) * 0.3,
       0,
+      ang,
+      0,
+    );
+    // Castor wheel
+    add(
+      cyl(0.028, 0.028, 0.028, 8),
+      mat("#0a0a0a", 0.9, 0),
+      cx + Math.sin(ang) * 0.44,
+      0.014,
+      cz + Math.cos(ang) * 0.44,
+      Math.PI / 2,
       ang,
       0,
     );
   }
 
-  // ── Trash can (under desk, right side) ────────────────────────────────────
-  add(cyl(0.13, 0.1, 0.28, 10), mat("#1e1e1e", 0.7, 0.1), 1.1, 0.12, 0.85);
-  // rim
-  add(cyl(0.135, 0.135, 0.018, 10), mat("#2a2a2a", 0.5, 0.3), 1.1, 0.27, 0.85);
-  // crumpled paper ball inside
+  // ── Trash can — under desk right side ─────────────────────────────────────
+  add(cyl(0.12, 0.095, 0.26, 10), mat("#1e1e1e", 0.7, 0.1), 1.55, 0.13, 1.55);
   add(
-    new THREE.SphereGeometry(0.055, 6, 5),
+    cyl(0.125, 0.125, 0.016, 10),
+    mat("#2a2a2a", 0.5, 0.3),
+    1.55,
+    0.258,
+    1.55,
+  );
+  add(
+    new THREE.SphereGeometry(0.05, 6, 5),
     mat("#d8d0b8", 0.95, 0),
-    1.1,
-    0.31,
-    0.85,
+    1.55,
+    0.295,
+    1.55,
   );
 
-  // ── Floor lamp (left back corner) ─────────────────────────────────────────
-  const floorLampX = -4.2,
-    floorLampZ = -2.8;
+  // ── Floor lamp (right back corner — away from monitors) ───────────────────
+  const floorLampX = 3.8,
+    floorLampZ = -2.6;
   // base
   add(
     cyl(0.18, 0.22, 0.04, 12),
@@ -1241,23 +1588,23 @@ function buildScene(): SceneObjects {
   floorLampGlow.position.set(floorLampX, 2.85, floorLampZ - 0.38);
   scene.add(floorLampGlow);
 
-  // ── Sticky notes on monitor bezel ─────────────────────────────────────────
+  // ── Sticky notes on right monitor bezel ───────────────────────────────────
   const stickyData = [
     {
       color: "#ffe066",
-      x: -0.31,
-      y: 0.22,
+      x: -0.28,
+      y: 0.14,
       rz: -0.08,
       text: ["fix auth bug", "!!"],
     },
     {
       color: "#a8e6a3",
       x: 0.28,
-      y: 0.18,
+      y: 0.1,
       rz: 0.06,
       text: ["deploy fri", "✓ tests"],
     },
-    { color: "#ffb3ba", x: -0.28, y: -0.14, rz: 0.1, text: ["call mom", "🙂"] },
+    { color: "#ffb3ba", x: -0.26, y: -0.12, rz: 0.1, text: ["call mom", "🙂"] },
   ];
   stickyData.forEach(({ color, x, y, rz, text }) => {
     const sc = document.createElement("canvas");
@@ -1266,7 +1613,6 @@ function buildScene(): SceneObjects {
     const sctx = sc.getContext("2d")!;
     sctx.fillStyle = color;
     sctx.fillRect(0, 0, 128, 128);
-    // fold corner
     sctx.fillStyle = "rgba(0,0,0,0.12)";
     sctx.beginPath();
     sctx.moveTo(96, 128);
@@ -1293,20 +1639,19 @@ function buildScene(): SceneObjects {
     smesh.position.set(
       monGrp.position.x + x,
       monGrp.position.y + y,
-      monGrp.position.z + 0.125,
+      monGrp.position.z + BEZEL_D / 2 + 0.002,
     );
-    smesh.rotation.set(monGrp.rotation.x, 0, rz);
+    smesh.rotation.set(monGrp.rotation.x, monGrp.rotation.y, rz);
     scene.add(smesh);
   });
 
-  // ── Open notebook on desk ──────────────────────────────────────────────────
-  // Notebook body — open, lying flat left of keyboard
-  const nbW = 0.38,
+  // ── Open notebook — left of keyboard ──────────────────────────────────────
+  const nbW = 0.36,
     nbH = 0.005,
-    nbD = 0.28;
+    nbD = 0.26;
   const nbX = -0.42,
-    nbY = 0.892,
-    nbZ = 0.52;
+    nbY = DESK_TOP + 0.004,
+    nbZ = 0.3;
   // Left page
   add(box(nbW / 2, nbH, nbD), mat("#f5f0e8", 0.9, 0), nbX - nbW / 4, nbY, nbZ);
   // Right page
@@ -1400,10 +1745,10 @@ function buildScene(): SceneObjects {
   nbPage.position.set(nbX + nbW / 4, nbY + 0.004, nbZ);
   scene.add(nbPage);
 
-  // ── Phone face-down on desk ────────────────────────────────────────────────
-  const phoneX = 0.45,
-    phoneY = 0.892,
-    phoneZ = 0.18;
+  // ── Phone face-down — right rear of desk ──────────────────────────────────
+  const phoneX = 0.82,
+    phoneY = DESK_TOP + 0.005,
+    phoneZ = 0.22;
   // Body
   add(
     box(0.08, 0.008, 0.155),
@@ -1459,10 +1804,10 @@ function buildScene(): SceneObjects {
     0,
   );
 
-  // ── Itachi Funko Pop (right side of monitor, near plant) ──────────────────
-  const itachiX = 0.62,
-    itachiY = 0.89,
-    itachiZ = -0.08;
+  // ── Itachi Funko Pop — right rear corner of desk ─────────────────────────
+  const itachiX = 1.42,
+    itachiY = DESK_TOP,
+    itachiZ = 0.08;
   // Base
   add(
     box(0.09, 0.015, 0.09),
@@ -1570,10 +1915,10 @@ function buildScene(): SceneObjects {
     itachiZ,
   );
 
-  // ── Sukuna Funko Pop (left of monitor, near mug) ───────────────────────────
-  const sukunaX = -0.52,
-    sukunaY = 0.89,
-    sukunaZ = -0.1;
+  // ── Sukuna Funko Pop — left rear corner of desk ───────────────────────────
+  const sukunaX = -1.42,
+    sukunaY = DESK_TOP,
+    sukunaZ = 0.08;
   // Base
   add(
     box(0.09, 0.015, 0.09),
@@ -1861,19 +2206,24 @@ function buildScene(): SceneObjects {
     -0.58,
   );
 
-  // ── Cork board on back wall (left side, above posters) ────────────────────
-  const WALL_Z = -3.88;
-  const cbW = 1.1,
-    cbH = 0.72;
-  const cbX = -3.0,
-    cbY = 4.1;
-  // Cork board frame
+  // ── Wall layout — back wall front face is at z = -3.93 ────────────────────
+  // Horizontal zones (camera sees roughly x = -4.5 to +4.5):
+  //  Poster | Poster | CorkBoard | Clock | Whiteboard | Poster | Poster
+  const WALL_Z = -3.93;
+  const WALL_FACE = WALL_Z; // items sit flush here + tiny z offset
+
+  // ── Cork board — left of centre ────────────────────────────────────────────
+  const cbW = 0.95,
+    cbH = 0.65;
+  const cbX = -1.0,
+    cbY = 2.25;
+  // Cork board frame (sits flush on wall)
   add(
-    box(cbW + 0.06, cbH + 0.06, 0.04),
+    box(cbW + 0.06, cbH + 0.06, 0.032),
     mat("#5a3010", 0.9, 0),
     cbX,
     cbY,
-    WALL_Z + 0.01,
+    WALL_FACE + 0.016,
   );
   // Cork surface
   const corkC = document.createElement("canvas");
@@ -1903,7 +2253,7 @@ function buildScene(): SceneObjects {
     new THREE.PlaneGeometry(cbW, cbH),
     new THREE.MeshStandardMaterial({ map: corkTex, roughness: 0.95 }),
   );
-  corkMesh.position.set(cbX, cbY, WALL_Z + 0.03);
+  corkMesh.position.set(cbX, cbY, WALL_FACE + 0.034);
   scene.add(corkMesh);
 
   // Pinned notes on cork board
@@ -1964,7 +2314,7 @@ function buildScene(): SceneObjects {
       new THREE.PlaneGeometry(0.18, 0.18),
       new THREE.MeshBasicMaterial({ map: ntex }),
     );
-    nmesh.position.set(x, y, WALL_Z + 0.05);
+    nmesh.position.set(x, y, WALL_FACE + 0.052);
     nmesh.rotation.z = rz;
     scene.add(nmesh);
     // Pushpin
@@ -1976,15 +2326,15 @@ function buildScene(): SceneObjects {
         metalness: 0.3,
       }),
     );
-    ppin.position.set(x, y + 0.085, WALL_Z + 0.062);
+    ppin.position.set(x, y + 0.085, WALL_FACE + 0.065);
     scene.add(ppin);
   });
 
-  // ── Whiteboard on back wall (right side) ──────────────────────────────────
+  // ── Whiteboard — right of centre ──────────────────────────────────────────
   const wbW = 0.95,
-    wbH = 0.6;
-  const wbX = 3.1,
-    wbY = 4.0;
+    wbH = 0.65;
+  const wbX = 1.0,
+    wbY = 2.25;
   // Frame
   add(
     box(wbW + 0.06, wbH + 0.06, 0.035),
@@ -2076,9 +2426,9 @@ function buildScene(): SceneObjects {
     WALL_Z + 0.06,
   );
 
-  // ── Wall clock on back wall (center, high up) ──────────────────────────────
-  const clockX = 0.5,
-    clockY = 4.55;
+  // ── Wall clock — dead centre between cork board and whiteboard ─────────────
+  const clockX = 0.0,
+    clockY = 2.3;
   const clockFaceC = document.createElement("canvas");
   clockFaceC.width = 256;
   clockFaceC.height = 256;
@@ -2167,28 +2517,37 @@ function buildScene(): SceneObjects {
   clockMesh.position.set(clockX, clockY, WALL_Z + 0.065);
   scene.add(clockMesh);
 
-  // ── Posters on the back wall ───────────────────────────────────────────────
-  addPoster(scene, makePoster_Isekai(), -2.1, 2.8, WALL_Z, 0, 0.035, 0);
-  addPoster(scene, makePoster_Shonen(), -0.55, 2.65, WALL_Z, 0, -0.045, 0);
-  addPoster(scene, makePoster_Fantasy(), 1.0, 2.75, WALL_Z, 0, 0.02, 0);
-  addPoster(scene, makePoster_Tournament(), 2.4, 2.6, WALL_Z, 0, -0.065, 0);
+  // ── Posters — evenly spread across back wall, staggered Z to avoid fighting ─
+  addPoster(scene, makePoster_Isekai(), -3.2, 2.0, WALL_Z + 0.0, 0, 0.02, 0);
+  addPoster(scene, makePoster_Shonen(), -2.1, 2.0, WALL_Z + 0.002, 0, -0.02, 0);
+  addPoster(scene, makePoster_Fantasy(), 2.1, 2.0, WALL_Z + 0.0, 0, 0.02, 0);
+  addPoster(
+    scene,
+    makePoster_Tournament(),
+    3.2,
+    2.0,
+    WALL_Z + 0.002,
+    0,
+    -0.02,
+    0,
+  );
 
   return { scene, screenGlow, updateScreen };
 }
 
 // ─── Camera rig ────────────────────────────────────────────────────────────────
 const IDLE = {
-  lookAt: new THREE.Vector3(0, 1.0, 0),
-  azimuth: 0.63,
-  elevation: 0.34,
-  radius: 6.84,
+  lookAt: new THREE.Vector3(0, 1.1, 0),
+  azimuth: 0.55,
+  elevation: 0.38,
+  radius: 6.2,
 };
 
 const ZOOM_END = {
-  lookAt: new THREE.Vector3(0.1, 1.55, -0.07),
-  azimuth: 0.0,
-  elevation: 0.012,
-  radius: 1.92,
+  lookAt: new THREE.Vector3(0.88, 1.23, -0.15),
+  azimuth: -0.12,
+  elevation: 0.08,
+  radius: 1.75,
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
