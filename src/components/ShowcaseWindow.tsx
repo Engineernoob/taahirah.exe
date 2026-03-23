@@ -1,155 +1,47 @@
-import { useMemo, useState } from "react";
-import { openResumePdf } from "../resume";
+import { useState } from "react";
 
 interface ShowcaseWindowProps {
   onOpen: (id: string) => void;
-  ownerName: string;
-  ownerTitle: string;
 }
 
-type ItemId =
-  | "projects"
-  | "project-ai"
-  | "project-terminal"
-  | "project-retro"
-  | "blog"
-  | "resume";
-
-interface ExplorerItem {
-  id: ItemId;
-  label: string;
-  icon: string;
-  kind: "folder" | "file";
-  level: number;
-  parent?: ItemId;
-  target?: string;
-  meta?: string;
-  description: string;
-}
-
-interface PreviewAction {
-  label: string;
-  target?: string;
-  kind?: "resume";
-}
-
-const EXPLORER_ITEMS: ExplorerItem[] = [
+const QUICK_LINKS = [
   {
     id: "projects",
-    label: "Projects",
     icon: "📁",
-    kind: "folder",
-    level: 0,
-    target: "projects",
-    meta: "3 items",
-    description: "A folder of selected builds, experiments, and interface work.",
+    label: "Projects",
+    desc: "See what I've built",
   },
-  {
-    id: "project-ai",
-    label: "AI Assistant",
-    icon: "📄",
-    kind: "file",
-    level: 1,
-    parent: "projects",
-    target: "projects",
-    meta: "Concept note",
-    description: "Agent-assisted workflow tooling focused on prompts, automation, and practical UX.",
-  },
-  {
-    id: "project-terminal",
-    label: "Terminal IDE",
-    icon: "📄",
-    kind: "file",
-    level: 1,
-    parent: "projects",
-    target: "projects",
-    meta: "Interface concept",
-    description: "A keyboard-first coding environment shaped around command palettes, panes, and speed.",
-  },
-  {
-    id: "project-retro",
-    label: "Retro Portfolio",
-    icon: "📄",
-    kind: "file",
-    level: 1,
-    parent: "projects",
-    target: "projects",
-    meta: "Live project",
-    description: "This Windows 95 portfolio itself: draggable windows, boot flow, and fake shell chrome.",
-  },
-  {
-    id: "blog",
-    label: "Blog",
-    icon: "📝",
-    kind: "folder",
-    level: 0,
-    target: "blog",
-    meta: "3 posts",
-    description: "Short writing about the build, experiments, and the case for making stranger work.",
-  },
+  { id: "about", icon: "👤", label: "About Me", desc: "Who I am" },
+  { id: "blog", icon: "📝", label: "Blog", desc: "Things I've written" },
   {
     id: "resume",
-    label: "Resume",
     icon: "📄",
-    kind: "file",
-    level: 0,
-    meta: "PDF document",
-    description: "The current résumé PDF for direct viewing or download.",
+    label: "Resume",
+    desc: "Download / view my résumé",
+  },
+  { id: "contact", icon: "✉️", label: "Contact", desc: "Get in touch" },
+  {
+    id: "netflix",
+    icon: "🎬",
+    label: "Netflix 95",
+    desc: "A little easter egg 👀",
   },
 ];
 
-const PREVIEW_COPY: Record<ItemId, { title: string; path: string; actions: PreviewAction[] }> = {
-  projects: {
-    title: "Projects Folder",
-    path: "C:\\My Computer\\Projects",
-    actions: [{ label: "Open Projects.dir", target: "projects" }],
-  },
-  "project-ai": {
-    title: "AI Assistant",
-    path: "C:\\My Computer\\Projects\\AI Assistant.txt",
-    actions: [{ label: "Open Projects.dir", target: "projects" }],
-  },
-  "project-terminal": {
-    title: "Terminal IDE",
-    path: "C:\\My Computer\\Projects\\Terminal IDE.txt",
-    actions: [{ label: "Open Projects.dir", target: "projects" }],
-  },
-  "project-retro": {
-    title: "Retro Portfolio",
-    path: "C:\\My Computer\\Projects\\Retro Portfolio.txt",
-    actions: [{ label: "Open Projects.dir", target: "projects" }],
-  },
-  blog: {
-    title: "Blog",
-    path: "C:\\My Computer\\Blog",
-    actions: [{ label: "Open Blog.txt", target: "blog" }],
-  },
-  resume: {
-    title: "Resume",
-    path: "C:\\My Computer\\Resume.pdf",
-    actions: [
-      { label: "Open Resume PDF", kind: "resume" },
-      { label: "Open Experience.log", target: "experience" },
-      { label: "Open Contact.txt", target: "contact" },
-    ],
-  },
-};
+const TIPS = [
+  "Double-click any desktop icon to open a window.",
+  "Windows are draggable — rearrange the desktop however you like.",
+  "Click the monitors in the 3D room to zoom in.",
+  "Check the Blog window for devlogs and thoughts.",
+  "The Netflix 95 window is hidden in the taskbar — go find it.",
+  "Right-click the desktop for options.",
+];
 
-export default function ShowcaseWindow({ onOpen, ownerName, ownerTitle }: ShowcaseWindowProps) {
-  const [selectedId, setSelectedId] = useState<ItemId>("projects");
-  const [projectsExpanded, setProjectsExpanded] = useState(true);
+export default function ShowcaseWindow({ onOpen }: ShowcaseWindowProps) {
+  const [tipIdx] = useState(() => Math.floor(Math.random() * TIPS.length));
+  const [dismissed, setDismissed] = useState(false);
 
-  const visibleItems = useMemo(
-    () =>
-      EXPLORER_ITEMS.filter(
-        (item) => item.level === 0 || (projectsExpanded && item.parent === "projects"),
-      ),
-    [projectsExpanded],
-  );
-
-  const selectedItem =
-    EXPLORER_ITEMS.find((item) => item.id === selectedId) ?? EXPLORER_ITEMS[0];
-  const preview = PREVIEW_COPY[selectedItem.id];
+  if (dismissed) return null;
 
   return (
     <div
@@ -159,235 +51,231 @@ export default function ShowcaseWindow({ onOpen, ownerName, ownerTitle }: Showca
         flexDirection: "column",
         fontFamily: "Tahoma, Arial, sans-serif",
         fontSize: 12,
-        background: "var(--color-gray-200)",
+        background: "#fff",
+        overflow: "hidden",
       }}
     >
+      {/* ── Blue hero banner ──────────────────────────────────────────────────── */}
       <div
         style={{
-          padding: "6px 10px",
-          background: "var(--color-gray-200)",
-          boxShadow: "inset 0 -1px 0 var(--color-gray-300)",
+          background:
+            "linear-gradient(135deg, #000080 0%, #1a1aaa 60%, #0000cc 100%)",
+          padding: "18px 20px 16px",
+          flexShrink: 0,
           display: "flex",
           alignItems: "center",
-          gap: 8,
-          flexShrink: 0,
+          gap: 16,
         }}
       >
-        <span style={{ fontSize: 12 }}>🖥</span>
+        {/* Avatar */}
         <div
           style={{
-            flex: 1,
-            background: "#fff",
-            padding: "2px 8px",
-            boxShadow: "var(--shadow-inner-1)",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {preview.path}
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "220px 1fr",
-          flex: 1,
-          minHeight: 0,
-        }}
-      >
-        <div
-          style={{
-            background: "#fff",
-            borderRight: "1px solid var(--color-gray-300)",
+            width: 58,
+            height: 58,
+            background: "rgba(255,255,255,0.12)",
+            border: "2px solid rgba(255,255,255,0.35)",
+            flexShrink: 0,
             display: "flex",
-            flexDirection: "column",
-            minHeight: 0,
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 22,
+            fontWeight: "bold",
+            color: "#fff",
+            letterSpacing: "0.05em",
+            boxShadow: "inset 2px 2px 0 rgba(255,255,255,0.2)",
           }}
         >
+          TD
+        </div>
+
+        <div>
           <div
             style={{
-              padding: "8px 10px",
-              background: "var(--color-gray-200)",
-              boxShadow: "inset 0 -1px 0 var(--color-gray-300)",
+              fontSize: 9,
+              color: "rgba(255,255,255,0.7)",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              marginBottom: 3,
+            }}
+          >
+            Welcome to
+          </div>
+          <div
+            style={{
+              fontSize: 20,
               fontWeight: "bold",
+              color: "#fff",
+              lineHeight: 1.1,
             }}
           >
-            My Computer
+            Taahirah Denmark
           </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
-            {visibleItems.map((item) => {
-              const active = item.id === selectedId;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setSelectedId(item.id)}
-                  onDoubleClick={() => {
-                    if (item.id === "resume") {
-                      openResumePdf();
-                      return;
-                    }
-                    if (item.target) onOpen(item.target);
-                  }}
-                  style={{
-                    width: "100%",
-                    border: "none",
-                    background: active ? "var(--color-blue)" : "transparent",
-                    color: active ? "#fff" : "#000",
-                    textAlign: "left",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "4px 10px",
-                    paddingLeft: 10 + item.level * 18,
-                    fontFamily: "Tahoma, Arial, sans-serif",
-                    cursor: "pointer",
-                  }}
-                >
-                  {item.id === "projects" ? (
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setProjectsExpanded((value) => !value);
-                      }}
-                      style={{
-                        display: "inline-flex",
-                        width: 12,
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {projectsExpanded ? "▾" : "▸"}
-                    </span>
-                  ) : (
-                    <span style={{ width: 12, flexShrink: 0 }} />
-                  )}
-                  <span style={{ width: 16, textAlign: "center", flexShrink: 0 }}>{item.icon}</span>
-                  <span style={{ flex: 1 }}>{item.label}</span>
-                </button>
-              );
-            })}
+          <div
+            style={{
+              fontSize: 11,
+              color: "rgba(255,255,255,0.8)",
+              marginTop: 3,
+            }}
+          >
+            Software Engineer · Lewis University CS '27
           </div>
         </div>
+      </div>
 
+      {/* ── Scrollable body ───────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px" }}>
+        {/* Intro blurb */}
+        <p
+          style={{
+            margin: "0 0 14px",
+            lineHeight: 1.7,
+            color: "#222",
+            fontSize: 12,
+          }}
+        >
+          Hey — glad you're here. This portfolio runs like a desktop operating
+          system. Every window is a real app. Open them, drag them around, and
+          explore. Use the quick-launch buttons below or double-click any icon
+          on the desktop.
+        </p>
+
+        {/* Win95 divider */}
+        <div style={{ height: 1, background: "#808080", margin: "0 0 1px" }} />
+        <div style={{ height: 1, background: "#fff", margin: "0 0 12px" }} />
+
+        {/* Quick launch grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 6,
+            marginBottom: 16,
+          }}
+        >
+          {QUICK_LINKS.map(({ id, icon, label, desc }) => (
+            <button
+              key={id}
+              onClick={() => onOpen(id)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 9,
+                padding: "7px 10px",
+                background: "#f0f0f0",
+                border: "2px solid",
+                borderColor: "#fff #808080 #808080 #fff",
+                cursor: "pointer",
+                textAlign: "left",
+                fontFamily: "Tahoma, Arial, sans-serif",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  "#000080";
+                (e.currentTarget as HTMLButtonElement).style.color = "#fff";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  "#f0f0f0";
+                (e.currentTarget as HTMLButtonElement).style.color = "#000";
+              }}
+            >
+              <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1 }}>
+                {icon}
+              </span>
+              <div>
+                <div style={{ fontWeight: "bold", fontSize: 11 }}>{label}</div>
+                <div style={{ fontSize: 10, opacity: 0.7, marginTop: 1 }}>
+                  {desc}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Win95 divider */}
+        <div style={{ height: 1, background: "#808080", margin: "0 0 1px" }} />
+        <div style={{ height: 1, background: "#fff", margin: "0 0 12px" }} />
+
+        {/* Tip of the day */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            minHeight: 0,
-            background: "#fff",
+            gap: 10,
+            alignItems: "flex-start",
+            padding: "8px 10px",
+            background: "#fffff0",
+            border: "1px solid #c8c800",
           }}
         >
-          <div
-            style={{
-              padding: "14px 16px 12px",
-              borderBottom: "1px solid var(--color-gray-100)",
-              background:
-                "linear-gradient(180deg, rgba(15,0,134,0.10) 0%, rgba(255,255,255,0) 100%)",
-            }}
-          >
-            <div style={{ fontSize: 19, fontWeight: "bold", color: "var(--color-blue)" }}>
-              {preview.title}
+          <span style={{ fontSize: 16, flexShrink: 0 }}>💡</span>
+          <div>
+            <div
+              style={{
+                fontWeight: "bold",
+                fontSize: 10,
+                color: "#666",
+                letterSpacing: "0.05em",
+                marginBottom: 3,
+                textTransform: "uppercase",
+              }}
+            >
+              Did you know?
             </div>
-            <div style={{ fontSize: 11, color: "#666", marginTop: 3 }}>
-              {selectedItem.meta ?? "Explorer item"}
-            </div>
-          </div>
-
-          <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
-            <div className="section-header">Overview</div>
-            <p className="content-p" style={{ marginTop: 0 }}>
-              {selectedItem.description}
-            </p>
-
-            <div className="section-header">System Info</div>
-            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 14 }}>
-              <tbody>
-                <tr>
-                  <td style={{ padding: "4px 10px 4px 0", width: 92, color: "#555" }}>Owner</td>
-                  <td style={{ padding: "4px 0", fontWeight: "bold" }}>{ownerName}</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: "4px 10px 4px 0", color: "#555" }}>Role</td>
-                  <td style={{ padding: "4px 0" }}>{ownerTitle}</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: "4px 10px 4px 0", color: "#555" }}>Location</td>
-                  <td style={{ padding: "4px 0" }}>{preview.path}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            {selectedId === "projects" && (
-              <>
-                <div className="section-header">Contents</div>
-                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 14 }}>
-                  <tbody>
-                    {EXPLORER_ITEMS.filter((item) => item.parent === "projects").map((item) => (
-                      <tr
-                        key={item.id}
-                        onClick={() => setSelectedId(item.id)}
-                        onDoubleClick={() => onOpen("projects")}
-                        style={{ cursor: "pointer" }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#000080";
-                          e.currentTarget.style.color = "#fff";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "";
-                          e.currentTarget.style.color = "";
-                        }}
-                      >
-                        <td style={{ padding: "4px 8px 4px 0", width: 24 }}>{item.icon}</td>
-                        <td style={{ padding: "4px 0" }}>{item.label}</td>
-                        <td style={{ padding: "4px 0", textAlign: "right", color: "inherit" }}>
-                          {item.meta}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </>
-            )}
-
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {preview.actions.map((action) => (
-                <button
-                  key={action.label}
-                  className="btn"
-                  style={{ fontFamily: "Tahoma, Arial, sans-serif", fontSize: 12 }}
-                  onClick={() => {
-                    if (action.kind === "resume") {
-                      openResumePdf();
-                      return;
-                    }
-                    if (action.target) onOpen(action.target);
-                  }}
-                >
-                  {action.label}
-                </button>
-              ))}
+            <div style={{ fontSize: 11, color: "#333", lineHeight: 1.6 }}>
+              {TIPS[tipIdx]}
             </div>
           </div>
         </div>
       </div>
 
+      {/* ── Footer ────────────────────────────────────────────────────────────── */}
       <div
         style={{
-          background: "var(--color-gray-200)",
-          borderTop: "1px solid var(--color-gray-300)",
-          padding: "3px 8px",
-          boxShadow: "inset 0 1px 0 #fff",
+          background: "#c0c0c0",
+          borderTop: "2px solid",
+          borderColor: "#fff #808080 #808080 #fff",
+          padding: "8px 12px",
           display: "flex",
+          alignItems: "center",
           justifyContent: "space-between",
-          gap: 12,
           flexShrink: 0,
-          fontSize: 11,
+          gap: 8,
         }}
       >
-        <span>{visibleItems.length} object(s)</span>
-        <span>{selectedItem.label}</span>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 11,
+            cursor: "pointer",
+            userSelect: "none",
+          }}
+        >
+          <input
+            type="checkbox"
+            onChange={(e) => {
+              if (e.target.checked) {
+                localStorage.setItem("welcome-dismissed", "1");
+              } else {
+                localStorage.removeItem("welcome-dismissed");
+              }
+            }}
+          />
+          Don't show this again
+        </label>
+
+        <button
+          className="btn"
+          style={{
+            fontFamily: "Tahoma, Arial, sans-serif",
+            fontSize: 12,
+            minWidth: 80,
+          }}
+          onClick={() => setDismissed(true)}
+        >
+          Close
+        </button>
       </div>
     </div>
   );

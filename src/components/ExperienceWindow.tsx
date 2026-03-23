@@ -7,9 +7,9 @@ const experiences = [
     date: "2024-2025",
     tech: ["Python", "React", "Node.js", "Google Cloud"],
     bullets: [
-      "Architected NLP-driven recommendation features using Node.js and Python, implementing advanced data structures to boost user engagement by 30% for 1,500+ active users.",
-      "Scaled backend services into a distributed system to accommodate 10,000+ daily API requests while maintaining a sub-200ms average latency.",
-      "Optimized Firebase database performance by implementing custom indexing and caching strategies, resulting in a 20% reduction in read latency and improved data throughput.",
+      "- Architected NLP-driven recommendation features using Node.js and Python, implementing advanced data structures to boost user engagement by 30% for 1,500+ active users.",
+      "- Scaled backend services into a distributed system to accommodate 10,000+ daily API requests while maintaining a sub-200ms average latency.",
+      "- Optimized Firebase database performance by implementing custom indexing and caching strategies, resulting in a 20% reduction in read latency and improved data throughput.",
     ],
   },
   {
@@ -18,9 +18,9 @@ const experiences = [
     date: "2016 – 2017",
     tech: ["Windows Server", "Active Directory", "Office 365"],
     bullets: [
-      "Mastered intensive technical training in IT systems, programming fundamentals, and enterprise software workflows, developing hands-on proficiency with AWS, Git, and React.",
-      "Led a capstone project to design and implement a secure, scalable web application using React and Node.js, demonstrating full-stack development skills and best practices.",
-      "Collaborated with a team of 5 trainees to troubleshoot and resolve complex IT issues in a simulated enterprise environment, enhancing problem-solving abilities and teamwork skills.",
+      "- Mastered intensive technical training in IT systems, programming fundamentals, and enterprise software workflows, developing hands-on proficiency with AWS, Git, and React.",
+      "- Led a capstone project to design and implement a secure, scalable web application using React and Node.js, demonstrating full-stack development skills and best practices.",
+      "- Collaborated with a team of 5 trainees to troubleshoot and resolve complex IT issues in a simulated enterprise environment, enhancing problem-solving abilities and teamwork skills.",
     ],
   },
   {
@@ -29,12 +29,10 @@ const experiences = [
     date: "2019 – 2020",
     tech: ["Customer Service", "Team Leadership", "Process Optimization"],
     bullets: [
-      "Operated in high-throughput environments managing 100+ parallel tasks per shift, prioritizing execution accuracy under strict timing constraints.",
-      "Improved operational efficiency by standardizing preparation workflows, reducing bottlenecks and improving service throughput.",
-      "Maintained strict compliance with safety and regulatory standards while operating in fast-paced production environments.",
-      "Demonstrated adaptability and resilience by successfully transitioning between multiple roles and responsibilities in dynamic work settings.",
-      "Diagnosed and resolved real-time operational issues during peak demand, maintaining service continuity and quality.",
-      "Collaborated with cross-functional teams to implement process improvements, enhancing overall operational performance and customer satisfaction.",
+      "- Operated in high-throughput environments managing 100+ parallel tasks per shift, prioritizing execution accuracy under strict timing constraints.",
+      "- Improved operational efficiency by standardizing preparation workflows, reducing bottlenecks and improving service throughput.",
+      "- Maintained strict compliance with safety and regulatory standards while operating in fast-paced production environments.",
+      "- Diagnosed and resolved real-time operational issues during peak demand, maintaining service continuity and quality.",
     ],
   },
 ];
