@@ -176,7 +176,7 @@ export default function Clippy() {
           style={{
             maxWidth: 220,
             padding: "8px 10px",
-            background: "#ffffc0",
+            background: "#2e2d2d",
             border: "2px solid",
             borderColor: "#808080 #fff #fff #808080",
             fontSize: 11,
