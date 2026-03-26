@@ -1324,7 +1324,16 @@
      RESPONSIVE
      ================================================ */
 
+  /* Tablet / small desktop: cap window widths so they don't overflow */
+  @media (min-width: 601px) and (max-width: 900px) {
+    .os-win {
+      max-width: calc(100vw - 40px) !important;
+    }
+  }
+
+  /* Mobile (phones) */
   @media (max-width: 600px) {
+    /* Windows: full-width with small margins */
     .os-win {
       max-width: calc(100vw - 8px) !important;
       max-height: calc(100vh - 40px) !important;
@@ -1332,25 +1341,74 @@
       left: 4px !important;
     }
 
+    /* Taller titlebar — easier to grab for touch dragging */
+    .os-win .dialog-header {
+      min-height: 28px !important;
+      padding: 4px 6px !important;
+    }
+
+    /* Bigger window control buttons — touch-friendly */
+    .os-ctrl-btn {
+      width: 22px !important;
+      height: 20px !important;
+      font-size: 10px !important;
+    }
+
     .showcase-firstname,
     .showcase-lastname {
       font-size: 38px;
     }
 
+    /* Desktop icons: slightly smaller */
     .desktop-icons-col {
       max-height: calc(100% - 44px);
-      gap: 4px;
+      gap: 3px;
+    }
+    .desktop-icon {
+      width: 58px !important;
+      min-height: 64px !important;
     }
 
+    /* Taskbar: overflow-scroll so many open windows don't break layout */
     .os-taskbar {
       gap: 2px !important;
       padding: 2px !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+    }
+    /* Hide scrollbar track but keep scrollability */
+    .os-taskbar::-webkit-scrollbar {
+      height: 0 !important;
     }
 
+    /* Taskbar window buttons: icon-only to save space */
     .os-titem {
-      min-width: 64px !important;
-      max-width: 110px !important;
-      padding: 0 6px !important;
+      min-width: 32px !important;
+      max-width: 40px !important;
+      padding: 0 8px !important;
+    }
+    .os-titem-label {
+      display: none !important;
+    }
+
+    /* Start menu: stretch full width */
+    .start-menu {
+      right: 0 !important;
+    }
+    .start-menu-items {
+      min-width: 0;
+    }
+
+    /* Programs submenu: fixed panel above taskbar, full width */
+    .start-submenu {
+      position: fixed !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 32px !important;
+      top: auto !important;
+      max-height: 55vh !important;
+      overflow-y: auto !important;
+      z-index: 1005 !important;
     }
   }
 }

@@ -40,10 +40,13 @@ export default function OsWindow({
   const dragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
 
-  const clampPosition = useCallback((nextX: number, nextY: number) => ({
-    x: Math.min(window.innerWidth - 60, Math.max(0, nextX)),
-    y: Math.min(window.innerHeight - 56, Math.max(0, nextY)),
-  }), []);
+  const clampPosition = useCallback((nextX: number, nextY: number) => {
+    const minVisible = Math.min(width, 120);
+    return {
+      x: Math.min(window.innerWidth - minVisible, Math.max(-(width - minVisible), nextX)),
+      y: Math.min(window.innerHeight - 56, Math.max(0, nextY)),
+    };
+  }, [width]);
 
   const stopDragging = useCallback(() => {
     dragging.current = false;

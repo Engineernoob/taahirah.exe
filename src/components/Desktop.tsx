@@ -125,6 +125,27 @@ const WINDOW_INITIAL: Record<WindowId, { x: number; y: number }> = {
 
 let topZ = 10;
 
+/** Returns a sensible initial position for a window based on current viewport. */
+function getSmartInitialPosition(id: WindowId): { x: number; y: number } {
+  const config = WINDOW_CONFIG[id];
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  if (vw < 768) {
+    // Mobile: center horizontally, position near top
+    const w = Math.min(config.width, vw - 8);
+    return { x: Math.max(0, Math.floor((vw - w) / 2)), y: 20 };
+  }
+
+  // Desktop: use configured base position clamped so the window stays on screen
+  const base = WINDOW_INITIAL[id];
+  const jitter = { x: Math.random() * 40, y: Math.random() * 24 };
+  return {
+    x: Math.min(base.x + jitter.x, Math.max(0, vw - config.width - 20)),
+    y: Math.min(base.y + jitter.y, Math.max(0, vh - config.height - 50)),
+  };
+}
+
 const WINDOW_IDS: WindowId[] = [
   "showcase","about","experience","projects","project-detail",
   "contact","wolfenstein","netflix","msn","notepad","settings","run","internet-explorer",
@@ -208,8 +229,9 @@ export default function Desktop({ onShutdown }: DesktopProps) {
         return { openWindows: prev.openWindows.map((w) => w.id === id ? { ...w, zIndex: topZ, minimized: false } : w), activeId: id };
       }
       playWindowOpen();
+      const pos = getSmartInitialPosition(id);
       return {
-        openWindows: [...prev.openWindows, { id, zIndex: topZ, x: WINDOW_INITIAL[id].x + Math.random() * 40, y: WINDOW_INITIAL[id].y + Math.random() * 24, minimized: false }],
+        openWindows: [...prev.openWindows, { id, zIndex: topZ, x: pos.x, y: pos.y, minimized: false }],
         activeId: id,
       };
     });
@@ -224,8 +246,9 @@ export default function Desktop({ onShutdown }: DesktopProps) {
         return { openWindows: prev.openWindows.map((w) => w.id === "project-detail" ? { ...w, zIndex: topZ, minimized: false } : w), activeId: "project-detail" };
       }
       playWindowOpen();
+      const pos = getSmartInitialPosition("project-detail");
       return {
-        openWindows: [...prev.openWindows, { id: "project-detail", zIndex: topZ, x: WINDOW_INITIAL["project-detail"].x + Math.random() * 30, y: WINDOW_INITIAL["project-detail"].y + Math.random() * 20, minimized: false }],
+        openWindows: [...prev.openWindows, { id: "project-detail", zIndex: topZ, x: pos.x, y: pos.y, minimized: false }],
         activeId: "project-detail",
       };
     });
@@ -361,7 +384,7 @@ export default function Desktop({ onShutdown }: DesktopProps) {
         <div className="start-menu" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           <div className="start-menu-sidebar"><span className="start-menu-brand">Windows 95</span></div>
           <div className="start-menu-items" onMouseLeave={() => setProgOpen(false)}>
-            <div className="start-menu-item has-submenu" onMouseEnter={() => setProgOpen(true)}>
+            <div className="start-menu-item has-submenu" onMouseEnter={() => setProgOpen(true)} onClick={(e) => { e.stopPropagation(); setProgOpen((v) => !v); }}>
               <span className="start-item-icon"><IconFolder size={16} /></span>
               <span className="start-item-label">Programs</span>
               <span className="start-item-arrow">▶</span>
