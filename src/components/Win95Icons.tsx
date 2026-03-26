@@ -18,7 +18,15 @@ export function IconMyComputer({ size = 32 }: IconProps) {
 }
 
 export function IconNotepad({ size = 32 }: IconProps) {
-  return <IcoImg src="/icons/w95_16.ico" size={size} alt="Notepad" />;
+  return <IcoImg src="/icons/notepad.ico" size={size} alt="Notepad" />;
+}
+
+export function IconAboutMe({ size = 32 }: IconProps) {
+  return <IcoImg src="/icons/about_me.ico" size={size} alt="About Me" />;
+}
+
+export function IconMSN({ size = 32 }: IconProps) {
+  return <IcoImg src="/icons/msn.ico" size={size} alt="MSN Messenger" />;
 }
 
 export function IconBriefcase({ size = 32 }: IconProps) {

@@ -15,6 +15,8 @@ import ProjectsWindow from "./ProjectsWindow";
 import {
   IconMyComputer,
   IconNotepad,
+  IconAboutMe,
+  IconMSN,
   IconBriefcase,
   IconFolder,
   IconEnvelope,
@@ -78,14 +80,14 @@ interface IconConfig { id: WindowId; label: string; Icon: ComponentType<{ size?:
 
 const ICONS: IconConfig[] = [
   { id: "showcase",    label: "My Computer",   Icon: IconMyComputer  },
-  { id: "about",       label: "About Me",      Icon: IconNotepad     },
+  { id: "about",       label: "About Me",      Icon: IconAboutMe     },
   { id: "experience",  label: "Experience",    Icon: IconBriefcase   },
   { id: "projects",    label: "Projects",      Icon: IconFolder      },
   { id: "contact",     label: "Contact.txt",   Icon: IconEnvelope    },
   { id: "wolfenstein", label: "Wolf3D.exe",    Icon: IconWolfenstein },
   { id: "blog",        label: "Blog.txt",      Icon: IconBlog        },
   { id: "netflix",     label: "Netflix 95",    Icon: IconNetflix     },
-  { id: "msn",         label: "MSN Chat",      Icon: IconEnvelope    },
+  { id: "msn",         label: "MSN Chat",      Icon: IconMSN         },
   { id: "notepad",     label: "Notepad",       Icon: IconNotepad     },
   { id: "settings",          label: "Settings",            Icon: IconMyComputer       },
   { id: "internet-explorer", label: "Internet Explorer",   Icon: IconInternetExplorer },
@@ -95,7 +97,7 @@ interface WindowConfig { title: string; Icon: ComponentType<{ size?: number }>; 
 
 const WINDOW_CONFIG: Record<WindowId, WindowConfig> = {
   showcase:         { title: "Welcome",            Icon: IconMyComputer,  width: 520, height: 500 },
-  about:            { title: "About Me",            Icon: IconNotepad,     width: 500, height: 560 },
+  about:            { title: "About Me",            Icon: IconAboutMe,     width: 500, height: 560 },
   experience:       { title: "Experience.log",      Icon: IconBriefcase,   width: 540, height: 480 },
   projects:         { title: "Projects.dir",        Icon: IconFolder,      width: 560, height: 500 },
   "project-detail": { title: "Project Details",     Icon: IconFolder,      width: 460, height: 420 },
@@ -103,7 +105,7 @@ const WINDOW_CONFIG: Record<WindowId, WindowConfig> = {
   wolfenstein:      { title: "Wolf3D.exe",          Icon: IconWolfenstein, width: 680, height: 520 },
   blog:             { title: "Blog.txt",            Icon: IconBlog,        width: 680, height: 480 },
   netflix:          { title: "Netflix 95",          Icon: IconNetflix,     width: 760, height: 560 },
-  msn:              { title: "MSN Messenger",       Icon: IconEnvelope,    width: 420, height: 500 },
+  msn:              { title: "MSN Messenger",       Icon: IconMSN,         width: 420, height: 500 },
   notepad:          { title: "Notepad",             Icon: IconNotepad,     width: 500, height: 420 },
   settings:         { title: "Display Properties",  Icon: IconMyComputer,  width: 400, height: 440 },
   run:              { title: "Run",                 Icon: IconMyComputer,        width: 380, height: 210 },
