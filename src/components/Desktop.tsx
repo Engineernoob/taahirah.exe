@@ -22,7 +22,6 @@ import {
   IconEnvelope,
   IconWindowsLogo,
   IconWolfenstein,
-  IconBlog,
   IconNetflix,
   IconInternetExplorer,
 } from "./Win95Icons";
@@ -33,7 +32,6 @@ const AboutWindow         = lazy(() => import("./AboutWindow"));
 const ExperienceWindow    = lazy(() => import("./ExperienceWindow"));
 const ProjectDetailWindow = lazy(() => import("./ProjectDetailWindow"));
 const ContactWindow       = lazy(() => import("./ContactWindow"));
-const Blog                = lazy(() => import("./Blog"));
 const WolfensteinWindow   = lazy(() => import("./WolfensteinWindow"));
 const NetflixWindow       = lazy(() => import("./NetflixWindow"));
 const MSNWindow           = lazy(() => import("./MSNWindow"));
@@ -50,7 +48,6 @@ type WindowId =
   | "project-detail"
   | "contact"
   | "wolfenstein"
-  | "blog"
   | "netflix"
   | "msn"
   | "notepad"
@@ -85,7 +82,6 @@ const ICONS: IconConfig[] = [
   { id: "projects",    label: "Projects",      Icon: IconFolder      },
   { id: "contact",     label: "Contact.txt",   Icon: IconEnvelope    },
   { id: "wolfenstein", label: "Wolf3D.exe",    Icon: IconWolfenstein },
-  { id: "blog",        label: "Blog.txt",      Icon: IconBlog        },
   { id: "netflix",     label: "Netflix 95",    Icon: IconNetflix     },
   { id: "msn",         label: "MSN Chat",      Icon: IconMSN         },
   { id: "notepad",     label: "Notepad",       Icon: IconNotepad     },
@@ -103,7 +99,6 @@ const WINDOW_CONFIG: Record<WindowId, WindowConfig> = {
   "project-detail": { title: "Project Details",     Icon: IconFolder,      width: 460, height: 420 },
   contact:          { title: "Contact.txt",         Icon: IconEnvelope,    width: 480, height: 460 },
   wolfenstein:      { title: "Wolf3D.exe",          Icon: IconWolfenstein, width: 680, height: 520 },
-  blog:             { title: "Blog.txt",            Icon: IconBlog,        width: 680, height: 480 },
   netflix:          { title: "Netflix 95",          Icon: IconNetflix,     width: 760, height: 560 },
   msn:              { title: "MSN Messenger",       Icon: IconMSN,         width: 420, height: 500 },
   notepad:          { title: "Notepad",             Icon: IconNotepad,     width: 500, height: 420 },
@@ -120,7 +115,6 @@ const WINDOW_INITIAL: Record<WindowId, { x: number; y: number }> = {
   "project-detail": { x: 240, y: 100 },
   contact:          { x: 150, y: 65  },
   wolfenstein:      { x: 100, y: 30  },
-  blog:             { x: 140, y: 50  },
   netflix:          { x: 170, y: 45  },
   msn:              { x: 300, y: 80  },
   notepad:          { x: 220, y: 90  },
@@ -133,7 +127,7 @@ let topZ = 10;
 
 const WINDOW_IDS: WindowId[] = [
   "showcase","about","experience","projects","project-detail",
-  "contact","wolfenstein","blog","netflix","msn","notepad","settings","run","internet-explorer",
+  "contact","wolfenstein","netflix","msn","notepad","settings","run","internet-explorer",
 ];
 const WINDOW_ID_SET = new Set<WindowId>(WINDOW_IDS);
 
@@ -271,8 +265,6 @@ export default function Desktop({ onShutdown }: DesktopProps) {
         return <ContactWindow />;
       case "wolfenstein":
         return <WolfensteinWindow />;
-      case "blog":
-        return <Blog />;
       case "netflix":
         return <NetflixWindow />;
       case "msn":
@@ -410,7 +402,6 @@ export default function Desktop({ onShutdown }: DesktopProps) {
           <div className="ctx-menu-item" onClick={closeMenus}>Refresh</div>
           <div className="ctx-menu-sep" />
           <div className="ctx-menu-item" onClick={() => { closeMenus(); openWindow("projects"); }}>Open Projects</div>
-          <div className="ctx-menu-item" onClick={() => { closeMenus(); openWindow("blog"); }}>Open Blog</div>
           <div className="ctx-menu-item" onClick={() => { closeMenus(); openWindow("run"); }}>Run...</div>
           <div className="ctx-menu-sep" />
           <div className="ctx-menu-item" onClick={() => { closeMenus(); openWindow("settings"); }}>Display Properties</div>
