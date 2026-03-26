@@ -22,6 +22,7 @@ import {
   IconWolfenstein,
   IconBlog,
   IconNetflix,
+  IconInternetExplorer,
 } from "./Win95Icons";
 import type { ProjectData } from "./ProjectDetailWindow";
 
@@ -36,7 +37,8 @@ const NetflixWindow       = lazy(() => import("./NetflixWindow"));
 const MSNWindow           = lazy(() => import("./MSNWindow"));
 const NotepadWindow       = lazy(() => import("./Notepad"));
 const SettingsWindow      = lazy(() => import("./Settings"));
-const RunDialog           = lazy(() => import("./Rundialog"));
+const RunDialog                = lazy(() => import("./Rundialog"));
+const InternetExplorerWindow  = lazy(() => import("./InternetExplorerWindow"));
 
 type WindowId =
   | "showcase"
@@ -51,7 +53,8 @@ type WindowId =
   | "msn"
   | "notepad"
   | "settings"
-  | "run";
+  | "run"
+  | "internet-explorer";
 
 interface WindowState {
   id: WindowId;
@@ -84,7 +87,8 @@ const ICONS: IconConfig[] = [
   { id: "netflix",     label: "Netflix 95",    Icon: IconNetflix     },
   { id: "msn",         label: "MSN Chat",      Icon: IconEnvelope    },
   { id: "notepad",     label: "Notepad",       Icon: IconNotepad     },
-  { id: "settings",    label: "Settings",      Icon: IconMyComputer  },
+  { id: "settings",          label: "Settings",            Icon: IconMyComputer       },
+  { id: "internet-explorer", label: "Internet Explorer",   Icon: IconInternetExplorer },
 ];
 
 interface WindowConfig { title: string; Icon: ComponentType<{ size?: number }>; width: number; height: number }
@@ -102,7 +106,8 @@ const WINDOW_CONFIG: Record<WindowId, WindowConfig> = {
   msn:              { title: "MSN Messenger",       Icon: IconEnvelope,    width: 420, height: 500 },
   notepad:          { title: "Notepad",             Icon: IconNotepad,     width: 500, height: 420 },
   settings:         { title: "Display Properties",  Icon: IconMyComputer,  width: 400, height: 440 },
-  run:              { title: "Run",                 Icon: IconMyComputer,  width: 380, height: 210 },
+  run:              { title: "Run",                 Icon: IconMyComputer,        width: 380, height: 210 },
+  "internet-explorer": { title: "Blog - Internet Explorer", Icon: IconInternetExplorer, width: 760, height: 540 },
 };
 
 const WINDOW_INITIAL: Record<WindowId, { x: number; y: number }> = {
@@ -119,13 +124,14 @@ const WINDOW_INITIAL: Record<WindowId, { x: number; y: number }> = {
   notepad:          { x: 220, y: 90  },
   settings:         { x: 260, y: 70  },
   run:              { x: 280, y: 200 },
+  "internet-explorer": { x: 130, y: 45 },
 };
 
 let topZ = 10;
 
 const WINDOW_IDS: WindowId[] = [
   "showcase","about","experience","projects","project-detail",
-  "contact","wolfenstein","blog","netflix","msn","notepad","settings","run",
+  "contact","wolfenstein","blog","netflix","msn","notepad","settings","run","internet-explorer",
 ];
 const WINDOW_ID_SET = new Set<WindowId>(WINDOW_IDS);
 
@@ -275,6 +281,8 @@ export default function Desktop({ onShutdown }: DesktopProps) {
         return <SettingsWindow onWallpaperChange={(wp) => setWallpaper(wp.value)} />;
       case "run":
         return <RunDialog onOpen={openWindow} onClose={() => closeWindow("run")} />;
+      case "internet-explorer":
+        return <InternetExplorerWindow />;
       default:
         return null;
     }

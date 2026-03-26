@@ -48,3 +48,7 @@ export function IconNetflix({ size = 32 }: IconProps) {
 export function IconWindowsLogo({ size = 16 }: IconProps) {
   return <IcoImg src="/icons/start-button.ico" size={size} alt="Windows" />;
 }
+
+export function IconInternetExplorer({ size = 32 }: IconProps) {
+  return <IcoImg src="/icons/internet.ico" size={size} alt="Internet Explorer" />;
+}
