@@ -155,29 +155,8 @@ export default function ShowcaseWindow({ onOpen }: ShowcaseWindowProps) {
           {QUICK_LINKS.map(({ id, icon, label, desc }) => (
             <button
               key={id}
+              className="quick-link-btn"
               onClick={() => onOpen(id)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 9,
-                padding: "7px 10px",
-                background: "#f0f0f0",
-                border: "2px solid",
-                borderColor: "#fff #808080 #808080 #fff",
-                cursor: "pointer",
-                textAlign: "left",
-                fontFamily: "Tahoma, Arial, sans-serif",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "#000080";
-                (e.currentTarget as HTMLButtonElement).style.color = "#fff";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "#f0f0f0";
-                (e.currentTarget as HTMLButtonElement).style.color = "#000";
-              }}
             >
               <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1 }}>
                 {icon}

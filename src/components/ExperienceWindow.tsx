@@ -185,7 +185,7 @@ export default function ExperienceWindow() {
             >
               {exp.bullets.map((b, j) => (
                 <li key={j} style={{ marginBottom: 2 }}>
-                  {b}
+                  {b.replace(/^-\s*/, "")}
                 </li>
               ))}
             </ul>

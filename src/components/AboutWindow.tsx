@@ -93,7 +93,7 @@ function Divider() {
   );
 }
 
-function SkillBar({ name, pct }: { name: string; pct: number }) {
+function SkillBar({ name, pct, delay = 0 }: { name: string; pct: number; delay?: number }) {
   const label =
     pct >= 85
       ? "Strong"
@@ -129,6 +129,7 @@ function SkillBar({ name, pct }: { name: string; pct: number }) {
       >
         {/* Filled portion — chunky Win95 blocks */}
         <div
+          className="skill-bar-fill"
           style={{
             position: "absolute",
             top: 1,
@@ -137,6 +138,7 @@ function SkillBar({ name, pct }: { name: string; pct: number }) {
             width: `calc(${pct}% - 2px)`,
             background:
               "repeating-linear-gradient(90deg, #000080 0px, #000080 8px, #1a1aaa 8px, #1a1aaa 10px)",
+            animationDelay: `${delay * 55}ms`,
           }}
         />
       </div>
@@ -344,7 +346,7 @@ export default function AboutWindow() {
                 {group.toUpperCase()}
               </div>
               {SKILLS.filter((s) => s.group === group).map((s) => (
-                <SkillBar key={s.name} name={s.name} pct={s.pct} />
+                <SkillBar key={s.name} name={s.name} pct={s.pct} delay={SKILLS.indexOf(s)} />
               ))}
             </div>
           ))}

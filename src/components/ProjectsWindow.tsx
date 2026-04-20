@@ -133,6 +133,7 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
         {projects.map((proj, i) => (
           <div
             key={i}
+            className="project-row"
             style={{
               display: "grid",
               gridTemplateColumns: "28px 1fr 120px 85px",
@@ -140,18 +141,6 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
               borderBottom: "1px solid var(--color-gray-100)",
               alignItems: "start",
               cursor: "default",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#000080";
-              Array.from(
-                e.currentTarget.querySelectorAll<HTMLElement>("[data-text]"),
-              ).forEach((el) => (el.style.color = "#fff"));
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "";
-              Array.from(
-                e.currentTarget.querySelectorAll<HTMLElement>("[data-text]"),
-              ).forEach((el) => (el.style.color = ""));
             }}
             onDoubleClick={() => onOpenProject?.(proj)}
           >
@@ -211,6 +200,7 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
               {proj.tech.slice(0, 3).map((t) => (
                 <span
                   key={t}
+                  data-text
                   style={{
                     fontSize: 10,
                     color: "var(--color-blue)",
@@ -226,7 +216,7 @@ export default function ProjectsWindow({ onOpenProject }: ProjectsWindowProps) {
                 </span>
               ))}
               {proj.tech.length > 3 && (
-                <span style={{ fontSize: 10, color: "#888" }}>
+                <span data-text style={{ fontSize: 10, color: "#888" }}>
                   +{proj.tech.length - 3} more
                 </span>
               )}
