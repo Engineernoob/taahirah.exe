@@ -29,6 +29,15 @@ const BIOS_LINES = [
   "",
 ];
 
+// Per-line cadence. Faster than before (was 70ms/50ms) but not so fast
+// it stops reading like a real BIOS. Blank lines step quickly so the
+// vertical rhythm of BIOS_LINES still matters.
+const LINE_DELAY_MS = 50;
+const BLANK_DELAY_MS = 30;
+// How long to hold on the completed BIOS before handing off. Real POSTs
+// have a brief pause here while the bootloader finds the OS partition.
+const TAIL_MS = 300;
+
 interface BootScreenProps {
   onComplete: () => void;
 }
@@ -44,13 +53,14 @@ export default function BootScreen({ onComplete }: BootScreenProps) {
 
   useEffect(() => {
     if (visibleLines < BIOS_LINES.length) {
-      const delay = BIOS_LINES[visibleLines] === "" ? 50 : 70;
+      const isBlank = BIOS_LINES[visibleLines] === "";
+      const delay = isBlank ? BLANK_DELAY_MS : LINE_DELAY_MS;
       const timer = setTimeout(() => {
         setVisibleLines((v) => v + 1);
       }, delay);
       return () => clearTimeout(timer);
     }
-    const timer = setTimeout(() => onComplete(), 700);
+    const timer = setTimeout(() => onComplete(), TAIL_MS);
     return () => clearTimeout(timer);
   }, [onComplete, visibleLines]);
 

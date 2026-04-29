@@ -5,22 +5,17 @@ interface WindowsSplashProps {
   onComplete: () => void;
 }
 
-// Win95 progress bar — chunky discrete blocks that fill left to right
-function ProgressBar() {
-  const TOTAL = 18;
-  const [filled, setFilled] = useState(0);
+// How long the splash is visible *after* fade-in completes. The progress
+// bar fills evenly across this window; onComplete fires at the end.
+const SPLASH_VISIBLE_MS = 1600;
+// Fade-in length. Short enough to feel like a CRT warming up, long enough
+// to register as a transition rather than a flash.
+const FADE_IN_MS = 200;
 
-  useEffect(() => {
-    let i = 0;
-    // Fill one block every ~130ms so it takes ~2.3s to complete
-    const iv = setInterval(() => {
-      i++;
-      setFilled(i);
-      if (i >= TOTAL) clearInterval(iv);
-    }, 130);
-    return () => clearInterval(iv);
-  }, []);
+const PROGRESS_TOTAL = 18;
 
+// Controlled progress bar. `filled` is owned by the parent; the bar just renders.
+function ProgressBar({ filled }: { filled: number }) {
   return (
     <div
       style={{
@@ -32,14 +27,13 @@ function ProgressBar() {
         width: 200,
       }}
     >
-      {Array.from({ length: TOTAL }).map((_, idx) => (
+      {Array.from({ length: PROGRESS_TOTAL }).map((_, idx) => (
         <div
           key={idx}
           style={{
             width: 8,
             height: 14,
             background: idx < filled ? "#00a" : "#000",
-            // Each filled block has a subtle top-left highlight for depth
             boxShadow:
               idx < filled ? "inset 1px 1px 0 rgba(100,100,255,0.5)" : "none",
             transition: "background 0.05s",
@@ -51,10 +45,37 @@ function ProgressBar() {
 }
 
 export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
+  const [filled, setFilled] = useState(0);
+  // Drives the fade-in CSS opacity transition. Set to 1 on next frame so
+  // the browser actually animates 0 -> 1 instead of skipping to 1.
+  const [opacity, setOpacity] = useState(0);
+
   useEffect(() => {
     playStartup();
-    const timer = setTimeout(() => onComplete(), 2600);
-    return () => clearTimeout(timer);
+
+    // Trigger fade-in on the next frame
+    const fadeRaf = requestAnimationFrame(() => setOpacity(1));
+
+    // Drive the progress bar evenly across SPLASH_VISIBLE_MS, starting
+    // after the fade-in completes so the bar isn't filling under a
+    // half-faded flag.
+    const stepMs = SPLASH_VISIBLE_MS / PROGRESS_TOTAL;
+    let i = 0;
+    const fillIv = window.setTimeout(function tick() {
+      i++;
+      setFilled(i);
+      if (i < PROGRESS_TOTAL) {
+        window.setTimeout(tick, stepMs);
+      } else {
+        // Hand off as soon as the bar lands. No artificial dead zone.
+        onComplete();
+      }
+    }, FADE_IN_MS + stepMs);
+
+    return () => {
+      cancelAnimationFrame(fadeRaf);
+      window.clearTimeout(fillIv);
+    };
   }, [onComplete]);
 
   return (
@@ -68,12 +89,12 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
         alignItems: "center",
         justifyContent: "center",
         zIndex: 9999,
-        // Subtle scanline overlay
+        opacity,
+        transition: `opacity ${FADE_IN_MS}ms ease-out`,
         backgroundImage:
           "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px)",
       }}
     >
-      {/* Centre card */}
       <div
         style={{
           display: "flex",
@@ -92,17 +113,12 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
             width: 76,
             height: 76,
             marginBottom: 20,
-            // Very slight drop shadow so it lifts off black
             filter: "drop-shadow(0 2px 8px rgba(0,0,80,0.8))",
           }}
         >
-          {/* Red (top-left) */}
           <div style={{ background: "#c0002a" }} />
-          {/* Green (top-right) */}
           <div style={{ background: "#1e7a1e" }} />
-          {/* Blue (bottom-left) */}
           <div style={{ background: "#00009a" }} />
-          {/* Yellow (bottom-right) */}
           <div style={{ background: "#c8a800" }} />
         </div>
 
@@ -116,7 +132,6 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
             lineHeight: 1,
           }}
         >
-          {/* "Microsoft" in small caps above, "Windows" large */}
           <div
             style={{
               display: "flex",
@@ -151,8 +166,6 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
               Windows
             </span>
           </div>
-
-          {/* "95" — bold, slightly smaller, offset up */}
           <span
             style={{
               fontFamily: "'Times New Roman', Times, serif",
@@ -169,7 +182,6 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
           </span>
         </div>
 
-        {/* ── Tagline ──────────────────────────────────────────────────────── */}
         <p
           style={{
             fontFamily: "'Times New Roman', Times, serif",
@@ -183,11 +195,9 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
           Starting Windows 95...
         </p>
 
-        {/* ── Progress bar ─────────────────────────────────────────────────── */}
-        <ProgressBar />
+        <ProgressBar filled={filled} />
       </div>
 
-      {/* ── Bottom copyright line ────────────────────────────────────────────── */}
       <div
         style={{
           position: "absolute",

@@ -63,8 +63,34 @@ function makeScreenUpdater() {
   const sCtx = canvas.getContext("2d")!;
   const tex = new THREE.CanvasTexture(canvas);
 
-  function update(t: number) {
-    const scrollFrac = (t * 0.55) % MONITOR_LINES.length;
+  // Idle screen: just a blinking C:\> prompt. No scroll.
+  function drawIdle(t: number) {
+    sCtx.fillStyle = "#000e00";
+    sCtx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+    sCtx.font = 'bold 13px "Courier New", Courier, monospace';
+    sCtx.fillStyle = "#e8e8e8";
+    sCtx.fillText("C:\\>", 8, 28);
+
+    if (Math.floor(t * 1.5) % 2 === 0) {
+      sCtx.fillStyle = "#00e020";
+      sCtx.fillRect(40, 16, 8, 13);
+    }
+
+    // Subtle scanlines preserved so the screen still feels CRT-y at idle
+    sCtx.fillStyle = "rgba(0,0,0,0.18)";
+    for (let y = 0; y < CANVAS_H; y += 3) {
+      sCtx.fillRect(0, y, CANVAS_W, 1);
+    }
+
+    tex.needsUpdate = true;
+  }
+
+  // Boot screen: full BIOS scroll, parameterised by progress 0->1.
+  // progress drives how far through MONITOR_LINES we've scrolled. The "spinner"
+  // cursor still uses real time so it blinks at a constant rate.
+  function drawBoot(t: number, progress: number) {
+    const scrollFrac = progress * MONITOR_LINES.length;
     const startLine = Math.floor(scrollFrac);
     const subPx = (scrollFrac - startLine) * LINE_H;
 
@@ -95,6 +121,18 @@ function makeScreenUpdater() {
     }
 
     tex.needsUpdate = true;
+  }
+
+  // Single update entry point. zoomProgress 0 = idle, 1 = full close-up.
+  // Scroll begins at zoomProgress >= 0.05 (just after click) and completes
+  // at zoomProgress = 1, so the BIOS finishes painting right as the camera lands.
+  function update(t: number, zoomProgress: number) {
+    if (zoomProgress < 0.05) {
+      drawIdle(t);
+    } else {
+      const bootProgress = (zoomProgress - 0.05) / 0.95;
+      drawBoot(t, bootProgress);
+    }
   }
 
   return { tex, update };
@@ -942,7 +980,7 @@ function addPoster(
 interface SceneObjects {
   scene: THREE.Scene;
   screenGlow: THREE.PointLight;
-  updateScreen: (t: number) => void;
+  updateScreen: (t: number, zoomProgress: number) => void;
 }
 
 function buildScene(): SceneObjects {
@@ -2544,10 +2582,16 @@ const IDLE = {
 };
 
 const ZOOM_END = {
-  lookAt: new THREE.Vector3(0.88, 1.23, -0.15),
+  // lookAt biased slightly down: at close range with elevation > 0,
+  // the camera looks down onto the panel, so target needs to drop
+  // to keep the screen content vertically centered in frame.
+  lookAt: new THREE.Vector3(0.88, 1.2, -0.15),
   azimuth: -0.12,
   elevation: 0.08,
-  radius: 1.75,
+  // 1.10m chosen empirically: at FOV 45°, this gives ~95% screen fill
+  // with the bezel falling just outside the frame. Tighter than this
+  // starts cropping screen content.
+  radius: 1.1,
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -2643,18 +2687,29 @@ export default function LandingScene({
     const curLookAt = (isShutdownMode ? ZOOM_END.lookAt : IDLE.lookAt).clone();
     let zoomProgress = isShutdownMode ? 1 : 0;
 
+    // Tunable: how long the dolly takes, in seconds. ~3.5s zoom-in, slightly
+    // faster pull-back so shutdown doesn't drag.
+    const ZOOM_IN_SECONDS = 3.5;
+    const PULL_BACK_SECONDS = 2.2;
+
     let rafId = 0;
     let startTime = performance.now();
+    let lastFrameTime = startTime;
 
     const animate = (now: number) => {
       rafId = requestAnimationFrame(animate);
       const t = (now - startTime) / 1000;
+      // Real elapsed seconds since last frame. Clamped to avoid huge jumps
+      // if the tab was backgrounded — without the clamp, returning to a tab
+      // mid-animation would teleport zoomProgress.
+      const dt = Math.min(0.05, (now - lastFrameTime) / 1000);
+      lastFrameTime = now;
 
       if (phaseRef.current === "zoomingIn" && zoomProgress < 1) {
-        zoomProgress = Math.min(1, zoomProgress + 0.016 * 0.55);
+        zoomProgress = Math.min(1, zoomProgress + dt / ZOOM_IN_SECONDS);
       }
       if (phaseRef.current === "pullingBack" && zoomProgress > 0) {
-        zoomProgress = Math.max(0, zoomProgress - 0.016 * 0.6);
+        zoomProgress = Math.max(0, zoomProgress - dt / PULL_BACK_SECONDS);
         if (zoomProgress === 0) setScenePhase("idle");
       }
       const zoomT = easeInOutQuint(zoomProgress);
@@ -2679,7 +2734,8 @@ export default function LandingScene({
           : phaseRef.current === "pullingBack"
             ? 4.2
             : 2.5;
-      const dt = 0.016;
+      // Reuse `dt` from above. Math.min(1, ...) ensures the spring can't
+      // overshoot in a single frame even if dt is large after a tab return.
       curAzimuth += (targetAz - curAzimuth) * Math.min(1, followSpeed * dt);
       curElevation += (targetEl - curElevation) * Math.min(1, followSpeed * dt);
       curRadius += (targetRadius - curRadius) * Math.min(1, followSpeed * dt);
@@ -2693,7 +2749,7 @@ export default function LandingScene({
       );
       camera.lookAt(curLookAt);
 
-      updateScreen(t);
+      updateScreen(t, zoomProgress);
       const pulse = 0.9 + Math.sin(t * 2.1) * 0.1;
       screenGlow.intensity = lerp(1.2, 2.4, zoomT) * pulse;
 
@@ -2721,8 +2777,10 @@ export default function LandingScene({
     if (phaseRef.current !== "idle") return;
     unlockAudio();
     setScenePhase("zoomingIn");
-    setTimeout(() => setFadeOpacity(1), 1100);
-    setTimeout(() => onStart(), 2500);
+    // Fade-to-black starts at ~70% of the dolly so the cut to BootScreen
+    // lands while the camera is still moving — preserves the boot-into-OS feel.
+    setTimeout(() => setFadeOpacity(1), 2400);
+    setTimeout(() => onStart(), 3500);
   };
 
   if (webglFailed) {
