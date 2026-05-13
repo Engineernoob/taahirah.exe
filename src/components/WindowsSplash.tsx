@@ -61,20 +61,22 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
     // half-faded flag.
     const stepMs = SPLASH_VISIBLE_MS / PROGRESS_TOTAL;
     let i = 0;
-    const fillIv = window.setTimeout(function tick() {
+    let timerId: number;
+    function tick() {
       i++;
       setFilled(i);
       if (i < PROGRESS_TOTAL) {
-        window.setTimeout(tick, stepMs);
+        timerId = window.setTimeout(tick, stepMs);
       } else {
         // Hand off as soon as the bar lands. No artificial dead zone.
         onComplete();
       }
-    }, FADE_IN_MS + stepMs);
+    }
+    timerId = window.setTimeout(tick, FADE_IN_MS + stepMs);
 
     return () => {
       cancelAnimationFrame(fadeRaf);
-      window.clearTimeout(fillIv);
+      window.clearTimeout(timerId);
     };
   }, [onComplete]);
 

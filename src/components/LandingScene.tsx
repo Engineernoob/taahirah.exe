@@ -2749,7 +2749,10 @@ export default function LandingScene({
       );
       camera.lookAt(curLookAt);
 
-      updateScreen(t, zoomProgress);
+      // During pullback (shutdown mode zooming out), show idle screen
+      // instead of running the BIOS scroll in reverse.
+      const screenProgress = phaseRef.current === "pullingBack" ? 0 : zoomProgress;
+      updateScreen(t, screenProgress);
       const pulse = 0.9 + Math.sin(t * 2.1) * 0.1;
       screenGlow.intensity = lerp(1.2, 2.4, zoomT) * pulse;
 
