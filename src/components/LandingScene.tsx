@@ -976,11 +976,94 @@ function addPoster(
   scene.add(shadow);
 }
 
+// ─── Clock updater ──────────────────────────────────────────────────────────────
+function makeClockUpdater() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d")!;
+  const tex = new THREE.CanvasTexture(canvas);
+
+  // Static face drawn once
+  function drawFace() {
+    ctx.fillStyle = "#f5f0e8";
+    ctx.beginPath();
+    ctx.arc(128, 128, 122, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#222222";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(128, 128, 122, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#1a1a1a";
+    for (let h = 0; h < 12; h++) {
+      const a = (h / 12) * Math.PI * 2 - Math.PI / 2;
+      const isMajor = h % 3 === 0;
+      const r1 = isMajor ? 96 : 105;
+      ctx.beginPath();
+      ctx.arc(128 + Math.cos(a) * r1, 128 + Math.sin(a) * r1, isMajor ? 6 : 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.font = "bold 20px serif";
+    ctx.fillStyle = "#1a1a1a";
+    ctx.textAlign = "center";
+    [[12, 128, 22], [3, 234, 134], [6, 128, 242], [9, 24, 134]].forEach(([n, x, y]) => ctx.fillText(String(n), x as number, y as number));
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#cc2222";
+    ctx.beginPath();
+    ctx.arc(128, 128, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#111";
+    ctx.beginPath();
+    ctx.arc(128, 128, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawHand(angleDeg: number, length: number, width: number, color: string) {
+    const a = ((angleDeg - 90) * Math.PI) / 180;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(128, 128);
+    ctx.lineTo(128 + Math.cos(a) * length, 128 + Math.sin(a) * length);
+    ctx.stroke();
+  }
+
+  drawFace();
+
+  let lastMinute = -1;
+  function update() {
+    const now = new Date();
+    const h = now.getHours() % 12;
+    const m = now.getMinutes();
+    const s = now.getSeconds();
+    const ms = now.getMilliseconds();
+    if (m === lastMinute) return;
+    lastMinute = m;
+    const hourAngle = (h + m / 60) * 30 + 270;
+    const minAngle = m * 6 + 270;
+    const secAngle = s * 6 + 270 + ms * 0.006;
+    ctx.fillStyle = "#f5f0e8";
+    ctx.beginPath();
+    ctx.arc(128, 128, 118, 0, Math.PI * 2);
+    ctx.fill();
+    drawHand(hourAngle, 72, 7, "#1a1a1a");
+    drawHand(minAngle, 95, 5, "#1a1a1a");
+    drawHand(secAngle, 100, 2, "#cc2222");
+    tex.needsUpdate = true;
+  }
+
+  return { tex, update };
+}
+
 // ─── Scene builder ─────────────────────────────────────────────────────────────
 interface SceneObjects {
   scene: THREE.Scene;
   screenGlow: THREE.PointLight;
+  screenGlow2: THREE.PointLight;
   updateScreen: (t: number, zoomProgress: number) => void;
+  updateAmbient: (t: number) => void;
 }
 
 function buildScene(): SceneObjects {
@@ -1010,6 +1093,8 @@ function buildScene(): SceneObjects {
   // screenGlow and lampGlow are added after monitors are built below
   const screenGlow = new THREE.PointLight("#22cc44", 1.8, 5.5);
   scene.add(screenGlow);
+  const screenGlow2 = new THREE.PointLight("#00dd66", 0.3, 3.0);
+  scene.add(screenGlow2);
 
   const lampGlow = new THREE.PointLight("#1a3a6a", 0.7, 4.0);
   scene.add(lampGlow);
@@ -1232,6 +1317,7 @@ function buildScene(): SceneObjects {
   lLed.position.set(0.43, -0.27, BEZEL_D / 2);
   lMonGrp.add(lLed);
   lampGlow.position.set(lMonX, MON_Y, MON_Z + 0.5);
+  scene.userData.lLed = lLed;
 
   // ── Right monitor — BIOS animated screen ──────────────────────────────────
   const rMonX = 0.88;
@@ -1266,6 +1352,7 @@ function buildScene(): SceneObjects {
   );
   rLed.position.set(0.43, -0.27, BEZEL_D / 2);
   monGrp.add(rLed);
+  scene.userData.rLed = rLed;
 
   // ── Mechanical Keyboard — centered on desk mat ────────────────────────────
   const kbdGrp = new THREE.Group();
@@ -2464,80 +2551,10 @@ function buildScene(): SceneObjects {
     WALL_Z + 0.06,
   );
 
-  // ── Wall clock — dead centre between cork board and whiteboard ─────────────
+  // ── Wall clock — shows real time with animated hands ──────────────────────
   const clockX = 0.0,
     clockY = 2.3;
-  const clockFaceC = document.createElement("canvas");
-  clockFaceC.width = 256;
-  clockFaceC.height = 256;
-  const cfCtx = clockFaceC.getContext("2d")!;
-  // Face
-  cfCtx.fillStyle = "#f5f0e8";
-  cfCtx.beginPath();
-  cfCtx.arc(128, 128, 122, 0, Math.PI * 2);
-  cfCtx.fill();
-  cfCtx.strokeStyle = "#222222";
-  cfCtx.lineWidth = 6;
-  cfCtx.beginPath();
-  cfCtx.arc(128, 128, 122, 0, Math.PI * 2);
-  cfCtx.stroke();
-  // Hour markers
-  cfCtx.fillStyle = "#1a1a1a";
-  for (let h = 0; h < 12; h++) {
-    const a = (h / 12) * Math.PI * 2 - Math.PI / 2;
-    const isMajor = h % 3 === 0;
-    const r1 = isMajor ? 96 : 105;
-    cfCtx.beginPath();
-    cfCtx.arc(
-      128 + Math.cos(a) * r1,
-      128 + Math.sin(a) * r1,
-      isMajor ? 6 : 3,
-      0,
-      Math.PI * 2,
-    );
-    cfCtx.fill();
-  }
-  // Hour numbers
-  cfCtx.font = "bold 20px serif";
-  cfCtx.fillStyle = "#1a1a1a";
-  cfCtx.textAlign = "center";
-  [
-    [12, 128, 22],
-    [3, 234, 134],
-    [6, 128, 242],
-    [9, 24, 134],
-  ].forEach(([n, x, y]) => cfCtx.fillText(String(n), x, y));
-  cfCtx.textAlign = "left";
-  // Hands — show ~10:10 (classic watch pose)
-  const drawHand = (
-    angleDeg: number,
-    length: number,
-    width: number,
-    color: string,
-  ) => {
-    const a = ((angleDeg - 90) * Math.PI) / 180;
-    cfCtx.strokeStyle = color;
-    cfCtx.lineWidth = width;
-    cfCtx.lineCap = "round";
-    cfCtx.beginPath();
-    cfCtx.moveTo(128, 128);
-    cfCtx.lineTo(128 + Math.cos(a) * length, 128 + Math.sin(a) * length);
-    cfCtx.stroke();
-  };
-  drawHand(300, 72, 7, "#1a1a1a"); // hour ~10
-  drawHand(60, 95, 5, "#1a1a1a"); // minute ~2
-  drawHand(180, 100, 2, "#cc2222"); // second
-  // Center dot
-  cfCtx.fillStyle = "#cc2222";
-  cfCtx.beginPath();
-  cfCtx.arc(128, 128, 7, 0, Math.PI * 2);
-  cfCtx.fill();
-  cfCtx.fillStyle = "#111";
-  cfCtx.beginPath();
-  cfCtx.arc(128, 128, 3, 0, Math.PI * 2);
-  cfCtx.fill();
-  const clockTex = new THREE.CanvasTexture(clockFaceC);
-  // Clock rim
+  const { tex: clockTex, update: updateClock } = makeClockUpdater();
   add(
     new THREE.CylinderGeometry(0.24, 0.24, 0.04, 24),
     mat("#2a2a2a", 0.3, 0.6),
@@ -2570,7 +2587,7 @@ function buildScene(): SceneObjects {
     0,
   );
 
-  return { scene, screenGlow, updateScreen };
+  return { scene, screenGlow, screenGlow2, updateScreen, updateAmbient: updateClock };
 }
 
 // ─── Camera rig ────────────────────────────────────────────────────────────────
@@ -2679,13 +2696,15 @@ export default function LandingScene({
       60,
     );
 
-    const { scene, screenGlow, updateScreen } = buildScene();
+    const { scene, screenGlow, screenGlow2, updateScreen, updateAmbient } = buildScene();
 
     let curAzimuth = isShutdownMode ? ZOOM_END.azimuth : IDLE.azimuth;
     let curElevation = isShutdownMode ? ZOOM_END.elevation : IDLE.elevation;
     let curRadius = isShutdownMode ? ZOOM_END.radius : IDLE.radius;
     const curLookAt = (isShutdownMode ? ZOOM_END.lookAt : IDLE.lookAt).clone();
     let zoomProgress = isShutdownMode ? 1 : 0;
+    // Bounce state: after zoom-in lands, track decay for subtle overshoot
+    let bounceDecay = 0;
 
     // Tunable: how long the dolly takes, in seconds. ~3.5s zoom-in, slightly
     // faster pull-back so shutdown doesn't drag.
@@ -2708,14 +2727,30 @@ export default function LandingScene({
       if (phaseRef.current === "zoomingIn" && zoomProgress < 1) {
         zoomProgress = Math.min(1, zoomProgress + dt / ZOOM_IN_SECONDS);
       }
+      if (phaseRef.current === "zoomingIn" && zoomProgress >= 1) {
+        // Subtle overshoot after landing — decays over ~0.5s
+        bounceDecay = Math.max(0, bounceDecay - dt * 4);
+      }
       if (phaseRef.current === "pullingBack" && zoomProgress > 0) {
         zoomProgress = Math.max(0, zoomProgress - dt / PULL_BACK_SECONDS);
         if (zoomProgress === 0) setScenePhase("idle");
       }
-      const zoomT = easeInOutQuint(zoomProgress);
+      const zoomBase = easeInOutQuint(zoomProgress);
+      // Apply overshoot bounce (peaks at +0.03, decays to 0)
+      const overshoot = bounceDecay > 0 ? Math.sin(bounceDecay * Math.PI * 10) * bounceDecay * 0.06 : 0;
+      const zoomT = Math.max(0, Math.min(1.04, zoomBase + overshoot));
+      if (phaseRef.current === "zoomingIn" && zoomProgress >= 1 && bounceDecay === 0) {
+        bounceDecay = 1;
+      }
 
-      const idleAzOscil = Math.sin(t * 0.07) * 0.09;
-      const idleElOscil = Math.sin(t * 0.05 + 1.2) * 0.018;
+      // Multi-frequency drift for organic idle feel
+      const idleAzOscil =
+        Math.sin(t * 0.07) * 0.09 +
+        Math.sin(t * 0.023 + 0.5) * 0.035 +
+        Math.sin(t * 0.11 + 0.7) * 0.02;
+      const idleElOscil =
+        Math.sin(t * 0.05 + 1.2) * 0.018 +
+        Math.sin(t * 0.08 + 0.3) * 0.008;
       const parallaxWeight = Math.max(0, 1 - zoomT * 2);
       const mouseAz = mouseRef.current.x * 0.08 * parallaxWeight;
       const mouseEl = mouseRef.current.y * 0.035 * parallaxWeight;
@@ -2753,9 +2788,22 @@ export default function LandingScene({
       // instead of running the BIOS scroll in reverse.
       const screenProgress = phaseRef.current === "pullingBack" ? 0 : zoomProgress;
       updateScreen(t, screenProgress);
-      const pulse = 0.9 + Math.sin(t * 2.1) * 0.1;
-      screenGlow.intensity = lerp(1.2, 2.4, zoomT) * pulse;
 
+      // CRT glow: warm pulse + random micro-flicker for cathode ray feel
+      const pulse = 0.85 + Math.sin(t * 2.1) * 0.12;
+      const flicker = 1 + (Math.random() - 0.5) * 0.04;
+      const baseIntensity = lerp(1.2, 2.4, zoomT);
+      screenGlow.intensity = baseIntensity * pulse * flicker;
+      screenGlow2.intensity = baseIntensity * 0.15 * (0.8 + Math.sin(t * 3.7 + 1.3) * 0.2);
+
+      // Monitor power LEDs: gentle breathing
+      const ledBrightness = 0.5 + Math.sin(t * 1.6) * 0.3 + 0.2;
+      const lLed = scene.userData.lLed as THREE.Mesh | undefined;
+      const rLed = scene.userData.rLed as THREE.Mesh | undefined;
+      if (lLed) (lLed.material as THREE.MeshBasicMaterial).color.setHSL(0.4, 1, 0.3 * ledBrightness);
+      if (rLed) (rLed.material as THREE.MeshBasicMaterial).color.setHSL(0.4, 1, 0.3 * ledBrightness);
+
+      updateAmbient(t);
       renderer.render(scene, camera);
     };
     rafId = requestAnimationFrame(animate);
