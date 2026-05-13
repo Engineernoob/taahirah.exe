@@ -2838,19 +2838,21 @@ export default function LandingScene({
           >
             Software Engineer
           </div>
-          {phase === "idle" && (
-            <div
-              style={{
-                color: "#909898",
-                fontFamily: "'Courier New', monospace",
-                fontSize: 15,
-                letterSpacing: "0.14em",
-                textShadow: "0 0 14px rgba(0,200,80,0.45)",
-              }}
-            >
-              {promptText} {cursorVisible ? "█" : "\u00a0"}
-            </div>
-          )}
+          <div
+            style={{
+              color: phase === "zoomingIn" ? "#4db870" : "#909898",
+              fontFamily: "'Courier New', monospace",
+              fontSize: 15,
+              letterSpacing: "0.14em",
+              textShadow: "0 0 14px rgba(0,200,80,0.45)",
+            }}
+          >
+            {phase === "idle"
+              ? `${promptText} ${cursorVisible ? "█" : "\u00a0"}`
+              : phase === "zoomingIn"
+                ? "Booting..." + (cursorVisible ? " █" : "")
+                : null}
+          </div>
         </div>
         <div
           style={{
