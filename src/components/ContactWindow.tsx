@@ -21,26 +21,49 @@ const LINKS = [
   },
 ];
 
+type FormStatus = "idle" | "sending" | "success" | "error";
+
+const FORM_ENDPOINT = import.meta.env.VITE_FORM_ENDPOINT as string | undefined;
+
 export default function ContactWindow() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [message, setMessage] = useState("");
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<FormStatus>("idle");
 
   const canSend = name.trim() && email.trim() && message.trim();
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!canSend) return;
-    const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
-    const body = encodeURIComponent(
-      `Name: ${name}\nEmail: ${email}\nCompany: ${company}\n\n${message}`,
-    );
-    window.open(
-      `mailto:${OWNER_EMAIL}?subject=${subject}&body=${body}`,
-      "_blank",
-    );
-    setSent(true);
+
+    if (FORM_ENDPOINT) {
+      setStatus("sending");
+      try {
+        const res = await fetch(FORM_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name.trim(), email: email.trim(), company: company.trim(), message: message.trim() }),
+        });
+        if (res.ok) {
+          setStatus("success");
+        } else {
+          setStatus("error");
+        }
+      } catch {
+        setStatus("error");
+      }
+    } else {
+      const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
+      const body = encodeURIComponent(
+        `Name: ${name}\nEmail: ${email}\nCompany: ${company}\n\n${message}`,
+      );
+      window.open(
+        `mailto:${OWNER_EMAIL}?subject=${subject}&body=${body}`,
+        "_blank",
+      );
+      setStatus("success");
+    }
   };
 
   return (
@@ -109,7 +132,7 @@ export default function ContactWindow() {
         {/* Message form */}
         <div className="section-header">Send a Message</div>
 
-        {sent ? (
+        {status === "success" ? (
           <div
             style={{
               padding: "12px 14px",
@@ -120,9 +143,25 @@ export default function ContactWindow() {
               marginBottom: 16,
             }}
           >
-            ✅ Your mail client should have opened — thanks for reaching out!{" "}
-            <button className="inline-link" onClick={() => setSent(false)}>
+            ✅ Thanks for reaching out{FORM_ENDPOINT ? ", I'll get back to you soon" : " — your mail client should have opened"}!{" "}
+            <button className="inline-link" onClick={() => { setStatus("idle"); setName(""); setEmail(""); setCompany(""); setMessage(""); }}>
               Send another
+            </button>
+          </div>
+        ) : status === "error" ? (
+          <div
+            style={{
+              padding: "12px 14px",
+              background: "#fff0f0",
+              border: "1px solid #c00",
+              color: "#800",
+              fontSize: 12,
+              marginBottom: 16,
+            }}
+          >
+            ❌ Something went wrong.{" "}
+            <button className="inline-link" onClick={() => setStatus("idle")}>
+              Try again
             </button>
           </div>
         ) : (
@@ -235,10 +274,10 @@ export default function ContactWindow() {
                   fontSize: 12,
                   minWidth: 110,
                 }}
-                disabled={!canSend}
+                disabled={!canSend || status === "sending"}
                 onClick={handleSend}
               >
-                Send Message
+                {status === "sending" ? "Sending..." : "Send Message"}
               </button>
               <span style={{ fontSize: 10, color: "#aaa" }}>* required</span>
             </div>

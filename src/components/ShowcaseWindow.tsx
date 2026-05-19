@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { openResumePdf } from "../resume";
 
 interface ShowcaseWindowProps {
   onOpen: (id: string) => void;
@@ -12,7 +13,7 @@ const QUICK_LINKS = [
     desc: "See what I've built",
   },
   { id: "about", icon: "👤", label: "About Me", desc: "Who I am" },
-  { id: "blog", icon: "📝", label: "Blog", desc: "Things I've written" },
+  { id: "internet-explorer", icon: "📝", label: "Blog", desc: "Things I've written" },
   {
     id: "resume",
     icon: "📄",
@@ -156,7 +157,9 @@ export default function ShowcaseWindow({ onOpen }: ShowcaseWindowProps) {
             <button
               key={id}
               className="quick-link-btn"
-              onClick={() => onOpen(id)}
+              onClick={() =>
+                id === "resume" ? openResumePdf() : onOpen(id)
+              }
             >
               <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1 }}>
                 {icon}

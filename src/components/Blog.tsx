@@ -244,6 +244,62 @@ type FSNode =
       },
     ],
   },
+  {
+    id: "notion-job-application-tracker",
+    title: "Building a Notion-Powered Job Application Tracker",
+    date: "May 19, 2026",
+    category: "Career",
+    excerpt:
+      "How I turned Notion into a command center for tracking applications, interviews, and rejections — with dashboards, databases, and automation.",
+    content: [
+      {
+        type: "p",
+        text: "Job hunting is messy. Spreadsheets feel too rigid. Separate docs feel too scattered. So I built a Notion workspace that acts as a full command center — tracking every application from 'Applied' to 'Offer' or 'Rejected' with structured databases, linked views, and a clean dashboard.",
+      },
+      {
+        type: "p",
+        text: "The system has been genuinely useful, so here's a breakdown of how it works.",
+      },
+      { type: "h3", text: "The Core Database" },
+      {
+        type: "p",
+        text: "Every application is a single row in a master database with these properties: Company, Role, Status (select), Date Applied, Link to Job Posting, Resume Version, Cover Letter, Contact Person, Follow-Up Date, and Notes. The status options are: Saved, Applied, Phone Screen, Technical Interview, On-Site, Offer, Rejected, Ghosted.",
+      },
+      { type: "h3", text: "The Dashboard Views" },
+      {
+        type: "ul",
+        items: [
+          "Kanban board grouped by status — drag and drop to update",
+          "Timeline view showing application dates and follow-up cadence",
+          "Table view with sortable columns for quick scanning",
+          "Gallery view with company logos for visual scanning",
+        ],
+      },
+      { type: "h3", text: "Rejection Tracking" },
+      {
+        type: "p",
+        text: "I have a dedicated rejection board that logs every 'no' with a timestamp, the company, the stage I got rejected at, and a notes field for any feedback I received. It sounds morbid, but over time it reveals patterns — which stages I tend to fail at, which industries respond better, and where I need to improve.",
+      },
+      {
+        type: "p",
+        text: "The rejection board is also oddly motivating. Seeing a wall of rejections and then a few offers makes the ratio real. It normalizes the process. Every 'no' is just data for the next iteration.",
+      },
+      { type: "h3", text: "Automations" },
+      {
+        type: "ul",
+        items: [
+          "Auto-creates a follow-up reminder 7 days after applying if no response",
+          "Tags companies by industry for later trend analysis",
+          "Rolls up weekly stats: applications sent, interviews scheduled, rejections received",
+          "Archives old applications automatically after 90 days in 'Rejected' or 'Ghosted' status",
+        ],
+      },
+      {
+        type: "p",
+        text: "The best part is that the system removes the mental overhead. I don't have to remember where I applied or who I talked to — it's all in one place. I just check the dashboard, see what's next, and act.",
+      },
+    ],
+  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

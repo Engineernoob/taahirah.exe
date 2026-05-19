@@ -81,7 +81,7 @@ export default function ProjectDetailWindow({
                 background:
                   status === "Live"
                     ? "#1a4a8b"
-                    : status === "In Progress"
+                    :                   status === "In-Progress"
                       ? "#5a3a00"
                       : "#1a5a1a",
                 color: "#fff",

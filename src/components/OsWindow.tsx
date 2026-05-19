@@ -105,7 +105,7 @@ export default function OsWindow({
             className="btn os-ctrl-btn"
             title="Minimize"
             onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); onMinimize?.(); }}
+            onClick={(e) => { e.stopPropagation(); playClick(); onMinimize?.(); }}
           >
             ─
           </button>
@@ -113,7 +113,7 @@ export default function OsWindow({
             className="btn os-ctrl-btn"
             title="Maximize"
             onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); setMaximized((m) => !m); onFocus?.(); }}
+            onClick={(e) => { e.stopPropagation(); playClick(); setMaximized((m) => !m); onFocus?.(); }}
           >
             □
           </button>

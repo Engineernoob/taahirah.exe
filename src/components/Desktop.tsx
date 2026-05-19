@@ -1,13 +1,15 @@
 import {
+  Component,
   Suspense,
   lazy,
   useCallback,
   useEffect,
   useState,
   type ComponentType,
+  type ErrorInfo,
   type ReactNode,
 } from "react";
-import { playWindowOpen } from "../sounds";
+import { playClick, playWindowClose, playWindowOpen } from "../sounds";
 import OsWindow from "./OsWindow";
 import Clock from "./Clock";
 import Clippy from "./Clippy";
@@ -199,6 +201,45 @@ function WindowLoadingFallback() {
   );
 }
 
+class WindowErrorBoundary extends Component<{ children: ReactNode; title: string }, { error: Error | null }> {
+  constructor(props: { children: ReactNode; title: string }) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error(`Window "${this.props.title}" crashed:`, error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          height: "100%", fontFamily: "Tahoma, Arial, sans-serif", fontSize: 12,
+          background: "#fff", color: "#333", padding: 24, textAlign: "center",
+          gap: 8,
+        }}>
+          <span style={{ fontSize: 32 }}>💥</span>
+          <div style={{ fontWeight: "bold" }}>This window has crashed</div>
+          <div style={{ fontSize: 10, color: "#888", maxWidth: 300, wordBreak: "break-word" }}>
+            {this.state.error.message}
+          </div>
+          <button className="btn" onClick={() => this.setState({ error: null })}
+            style={{ fontFamily: "Tahoma, Arial, sans-serif", fontSize: 11, marginTop: 4 }}>
+            Reload window
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 interface DesktopProps { onShutdown?: (action: ShutdownAction) => void }
 
 export default function Desktop({ onShutdown }: DesktopProps) {
@@ -217,6 +258,36 @@ export default function Desktop({ onShutdown }: DesktopProps) {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(DESKTOP_STATE_STORAGE_KEY, JSON.stringify({ openWindows, activeId }));
   }, [activeId, openWindows]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key === "F4") {
+        e.preventDefault();
+        if (activeId) {
+          closeWindow(activeId);
+          playWindowClose();
+        }
+      }
+      if (e.altKey && e.key === "Tab" && !e.repeat) {
+        e.preventDefault();
+        setDesktopState((prev) => {
+          if (prev.openWindows.length === 0) return prev;
+          const ids = prev.openWindows.filter((w) => !w.minimized).map((w) => w.id);
+          if (ids.length === 0) return prev;
+          const idx = prev.activeId ? ids.indexOf(prev.activeId) : -1;
+          const nextId = ids[(idx + 1) % ids.length];
+          topZ++;
+          return {
+            ...prev,
+            openWindows: prev.openWindows.map((w) => w.id === nextId ? { ...w, zIndex: topZ } : w),
+            activeId: nextId,
+          };
+        });
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeId, closeWindow]);
 
   const closeMenus = useCallback(() => { setStartOpen(false); setProgOpen(false); setCtxMenu(null); }, []);
 
@@ -341,9 +412,11 @@ export default function Desktop({ onShutdown }: DesktopProps) {
             isActive={activeId === win.id && !win.minimized} minimized={win.minimized}
             className={win.id === "wolfenstein" ? "os-win-game" : ""}
           >
-            <Suspense fallback={<WindowLoadingFallback />}>
-              {renderWindowContent(win.id)}
-            </Suspense>
+            <WindowErrorBoundary title={title}>
+              <Suspense fallback={<WindowLoadingFallback />}>
+                {renderWindowContent(win.id)}
+              </Suspense>
+            </WindowErrorBoundary>
           </OsWindow>
         );
       })}
