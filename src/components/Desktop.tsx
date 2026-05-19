@@ -9,7 +9,7 @@ import {
   type ErrorInfo,
   type ReactNode,
 } from "react";
-import { playClick, playWindowClose, playWindowOpen } from "../sounds";
+import { playWindowClose, playWindowOpen } from "../sounds";
 import OsWindow from "./OsWindow";
 import Clock from "./Clock";
 import Clippy from "./Clippy";
@@ -29,18 +29,18 @@ import {
 } from "./Win95Icons";
 import type { ProjectData } from "./ProjectDetailWindow";
 
-const ShowcaseWindow      = lazy(() => import("./ShowcaseWindow"));
-const AboutWindow         = lazy(() => import("./AboutWindow"));
-const ExperienceWindow    = lazy(() => import("./ExperienceWindow"));
+const ShowcaseWindow = lazy(() => import("./ShowcaseWindow"));
+const AboutWindow = lazy(() => import("./AboutWindow"));
+const ExperienceWindow = lazy(() => import("./ExperienceWindow"));
 const ProjectDetailWindow = lazy(() => import("./ProjectDetailWindow"));
-const ContactWindow       = lazy(() => import("./ContactWindow"));
-const WolfensteinWindow   = lazy(() => import("./WolfensteinWindow"));
-const NetflixWindow       = lazy(() => import("./NetflixWindow"));
-const MSNWindow           = lazy(() => import("./MSNWindow"));
-const NotepadWindow       = lazy(() => import("./Notepad"));
-const SettingsWindow      = lazy(() => import("./Settings"));
-const RunDialog                = lazy(() => import("./Rundialog"));
-const InternetExplorerWindow  = lazy(() => import("./InternetExplorerWindow"));
+const ContactWindow = lazy(() => import("./ContactWindow"));
+const WolfensteinWindow = lazy(() => import("./WolfensteinWindow"));
+const NetflixWindow = lazy(() => import("./NetflixWindow"));
+const MSNWindow = lazy(() => import("./MSNWindow"));
+const NotepadWindow = lazy(() => import("./Notepad"));
+const SettingsWindow = lazy(() => import("./Settings"));
+const RunDialog = lazy(() => import("./Rundialog"));
+const InternetExplorerWindow = lazy(() => import("./InternetExplorerWindow"));
 
 type WindowId =
   | "showcase"
@@ -65,63 +65,117 @@ interface WindowState {
   minimized: boolean;
 }
 
-interface CtxMenu { x: number; y: number }
-interface PersistedDesktopState { openWindows: WindowState[]; activeId: WindowId | null }
+interface CtxMenu {
+  x: number;
+  y: number;
+}
+interface PersistedDesktopState {
+  openWindows: WindowState[];
+  activeId: WindowId | null;
+}
 type ShutdownAction = "shutdown" | "restart" | "dos";
 
-export const OWNER_NAME  = "Taahirah Denmark";
+export const OWNER_NAME = "Taahirah Denmark";
 export const OWNER_TITLE = "Software Engineer";
 
 // Bumped to v3 to clear stale state that has old WindowIds
 const DESKTOP_STATE_STORAGE_KEY = "portfolio.desktop.state.v3";
 
-interface IconConfig { id: WindowId; label: string; Icon: ComponentType<{ size?: number }> }
+interface IconConfig {
+  id: WindowId;
+  label: string;
+  Icon: ComponentType<{ size?: number }>;
+}
 
 const ICONS: IconConfig[] = [
-  { id: "showcase",    label: "My Computer",   Icon: IconMyComputer  },
-  { id: "about",       label: "About Me",      Icon: IconAboutMe     },
-  { id: "experience",  label: "Experience",    Icon: IconBriefcase   },
-  { id: "projects",    label: "Projects",      Icon: IconFolder      },
-  { id: "contact",     label: "Contact.txt",   Icon: IconEnvelope    },
-  { id: "wolfenstein", label: "Wolf3D.exe",    Icon: IconWolfenstein },
-  { id: "netflix",     label: "Netflix 95",    Icon: IconNetflix     },
-  { id: "msn",         label: "MSN Chat",      Icon: IconMSN         },
-  { id: "notepad",     label: "Notepad",       Icon: IconNotepad     },
-  { id: "settings",          label: "Settings",            Icon: IconMyComputer       },
-  { id: "internet-explorer", label: "Internet Explorer",   Icon: IconInternetExplorer },
+  { id: "showcase", label: "My Computer", Icon: IconMyComputer },
+  { id: "about", label: "About Me", Icon: IconAboutMe },
+  { id: "experience", label: "Experience", Icon: IconBriefcase },
+  { id: "projects", label: "Projects", Icon: IconFolder },
+  { id: "contact", label: "Contact.txt", Icon: IconEnvelope },
+  { id: "wolfenstein", label: "Wolf3D.exe", Icon: IconWolfenstein },
+  { id: "netflix", label: "Netflix 95", Icon: IconNetflix },
+  { id: "msn", label: "MSN Chat", Icon: IconMSN },
+  { id: "notepad", label: "Notepad", Icon: IconNotepad },
+  { id: "settings", label: "Settings", Icon: IconMyComputer },
+  {
+    id: "internet-explorer",
+    label: "Internet Explorer",
+    Icon: IconInternetExplorer,
+  },
 ];
 
-interface WindowConfig { title: string; Icon: ComponentType<{ size?: number }>; width: number; height: number }
+interface WindowConfig {
+  title: string;
+  Icon: ComponentType<{ size?: number }>;
+  width: number;
+  height: number;
+}
 
 const WINDOW_CONFIG: Record<WindowId, WindowConfig> = {
-  showcase:         { title: "Welcome",            Icon: IconMyComputer,  width: 520, height: 500 },
-  about:            { title: "About Me",            Icon: IconAboutMe,     width: 500, height: 560 },
-  experience:       { title: "Experience.log",      Icon: IconBriefcase,   width: 540, height: 480 },
-  projects:         { title: "Projects.dir",        Icon: IconFolder,      width: 560, height: 500 },
-  "project-detail": { title: "Project Details",     Icon: IconFolder,      width: 460, height: 420 },
-  contact:          { title: "Contact.txt",         Icon: IconEnvelope,    width: 480, height: 460 },
-  wolfenstein:      { title: "Wolf3D.exe",          Icon: IconWolfenstein, width: 680, height: 520 },
-  netflix:          { title: "Netflix 95",          Icon: IconNetflix,     width: 760, height: 560 },
-  msn:              { title: "MSN Messenger",       Icon: IconMSN,         width: 420, height: 500 },
-  notepad:          { title: "Notepad",             Icon: IconNotepad,     width: 500, height: 420 },
-  settings:         { title: "Display Properties",  Icon: IconMyComputer,  width: 400, height: 440 },
-  run:              { title: "Run",                 Icon: IconMyComputer,        width: 380, height: 210 },
-  "internet-explorer": { title: "Blog - Internet Explorer", Icon: IconInternetExplorer, width: 760, height: 540 },
+  showcase: { title: "Welcome", Icon: IconMyComputer, width: 520, height: 500 },
+  about: { title: "About Me", Icon: IconAboutMe, width: 500, height: 560 },
+  experience: {
+    title: "Experience.log",
+    Icon: IconBriefcase,
+    width: 540,
+    height: 480,
+  },
+  projects: {
+    title: "Projects.dir",
+    Icon: IconFolder,
+    width: 560,
+    height: 500,
+  },
+  "project-detail": {
+    title: "Project Details",
+    Icon: IconFolder,
+    width: 460,
+    height: 420,
+  },
+  contact: {
+    title: "Contact.txt",
+    Icon: IconEnvelope,
+    width: 480,
+    height: 460,
+  },
+  wolfenstein: {
+    title: "Wolf3D.exe",
+    Icon: IconWolfenstein,
+    width: 680,
+    height: 520,
+  },
+  netflix: { title: "Netflix 95", Icon: IconNetflix, width: 760, height: 560 },
+  msn: { title: "MSN Messenger", Icon: IconMSN, width: 420, height: 500 },
+  notepad: { title: "Notepad", Icon: IconNotepad, width: 500, height: 420 },
+  settings: {
+    title: "Display Properties",
+    Icon: IconMyComputer,
+    width: 400,
+    height: 440,
+  },
+  run: { title: "Run", Icon: IconMyComputer, width: 380, height: 210 },
+  "internet-explorer": {
+    title: "Blog - Internet Explorer",
+    Icon: IconInternetExplorer,
+    width: 760,
+    height: 540,
+  },
 };
 
 const WINDOW_INITIAL: Record<WindowId, { x: number; y: number }> = {
-  showcase:         { x: 120, y: 40  },
-  about:            { x: 160, y: 60  },
-  experience:       { x: 180, y: 70  },
-  projects:         { x: 200, y: 80  },
+  showcase: { x: 120, y: 40 },
+  about: { x: 160, y: 60 },
+  experience: { x: 180, y: 70 },
+  projects: { x: 200, y: 80 },
   "project-detail": { x: 240, y: 100 },
-  contact:          { x: 150, y: 65  },
-  wolfenstein:      { x: 100, y: 30  },
-  netflix:          { x: 170, y: 45  },
-  msn:              { x: 300, y: 80  },
-  notepad:          { x: 220, y: 90  },
-  settings:         { x: 260, y: 70  },
-  run:              { x: 280, y: 200 },
+  contact: { x: 150, y: 65 },
+  wolfenstein: { x: 100, y: 30 },
+  netflix: { x: 170, y: 45 },
+  msn: { x: 300, y: 80 },
+  notepad: { x: 220, y: 90 },
+  settings: { x: 260, y: 70 },
+  run: { x: 280, y: 200 },
   "internet-explorer": { x: 130, y: 45 },
 };
 
@@ -149,8 +203,19 @@ function getSmartInitialPosition(id: WindowId): { x: number; y: number } {
 }
 
 const WINDOW_IDS: WindowId[] = [
-  "showcase","about","experience","projects","project-detail",
-  "contact","wolfenstein","netflix","msn","notepad","settings","run","internet-explorer",
+  "showcase",
+  "about",
+  "experience",
+  "projects",
+  "project-detail",
+  "contact",
+  "wolfenstein",
+  "netflix",
+  "msn",
+  "notepad",
+  "settings",
+  "run",
+  "internet-explorer",
 ];
 const WINDOW_ID_SET = new Set<WindowId>(WINDOW_IDS);
 
@@ -160,7 +225,15 @@ function isWindowId(value: unknown): value is WindowId {
 
 function getDefaultDesktopState(): PersistedDesktopState {
   return {
-    openWindows: [{ id: "showcase", zIndex: topZ, x: WINDOW_INITIAL.showcase.x, y: WINDOW_INITIAL.showcase.y, minimized: false }],
+    openWindows: [
+      {
+        id: "showcase",
+        zIndex: topZ,
+        x: WINDOW_INITIAL.showcase.x,
+        y: WINDOW_INITIAL.showcase.y,
+        minimized: false,
+      },
+    ],
     activeId: "showcase",
   };
 }
@@ -178,30 +251,60 @@ function restoreDesktopState(): PersistedDesktopState {
       if (!win || typeof win !== "object") return [];
       const c = win as Partial<WindowState>;
       if (!isWindowId(c.id) || seen.has(c.id)) return [];
-      if (typeof c.x !== "number" || typeof c.y !== "number" || typeof c.zIndex !== "number" ||
-          typeof c.minimized !== "boolean" || !Number.isFinite(c.x) || !Number.isFinite(c.y) || !Number.isFinite(c.zIndex)) return [];
+      if (
+        typeof c.x !== "number" ||
+        typeof c.y !== "number" ||
+        typeof c.zIndex !== "number" ||
+        typeof c.minimized !== "boolean" ||
+        !Number.isFinite(c.x) ||
+        !Number.isFinite(c.y) ||
+        !Number.isFinite(c.zIndex)
+      )
+        return [];
       seen.add(c.id);
-      return [{ id: c.id, x: c.x, y: c.y, zIndex: c.zIndex, minimized: c.minimized }];
+      return [
+        { id: c.id, x: c.x, y: c.y, zIndex: c.zIndex, minimized: c.minimized },
+      ];
     });
     if (openWindows.length === 0) return fallback;
     topZ = Math.max(10, ...openWindows.map((w) => w.zIndex));
     return {
       openWindows,
-      activeId: parsed.activeId !== null && isWindowId(parsed.activeId) && seen.has(parsed.activeId) ? parsed.activeId : null,
+      activeId:
+        parsed.activeId !== null &&
+        isWindowId(parsed.activeId) &&
+        seen.has(parsed.activeId)
+          ? parsed.activeId
+          : null,
     };
-  } catch { return fallback; }
+  } catch {
+    return fallback;
+  }
 }
 
 function WindowLoadingFallback() {
   return (
-    <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-      fontFamily: "Tahoma, Arial, sans-serif", fontSize: 12, background: "#fff", color: "#555" }}>
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "Tahoma, Arial, sans-serif",
+        fontSize: 12,
+        background: "#fff",
+        color: "#555",
+      }}
+    >
       Loading...
     </div>
   );
 }
 
-class WindowErrorBoundary extends Component<{ children: ReactNode; title: string }, { error: Error | null }> {
+class WindowErrorBoundary extends Component<
+  { children: ReactNode; title: string },
+  { error: Error | null }
+> {
   constructor(props: { children: ReactNode; title: string }) {
     super(props);
     this.state = { error: null };
@@ -218,19 +321,43 @@ class WindowErrorBoundary extends Component<{ children: ReactNode; title: string
   render() {
     if (this.state.error) {
       return (
-        <div style={{
-          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-          height: "100%", fontFamily: "Tahoma, Arial, sans-serif", fontSize: 12,
-          background: "#fff", color: "#333", padding: 24, textAlign: "center",
-          gap: 8,
-        }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            fontFamily: "Tahoma, Arial, sans-serif",
+            fontSize: 12,
+            background: "#fff",
+            color: "#333",
+            padding: 24,
+            textAlign: "center",
+            gap: 8,
+          }}
+        >
           <span style={{ fontSize: 32 }}>💥</span>
           <div style={{ fontWeight: "bold" }}>This window has crashed</div>
-          <div style={{ fontSize: 10, color: "#888", maxWidth: 300, wordBreak: "break-word" }}>
+          <div
+            style={{
+              fontSize: 10,
+              color: "#888",
+              maxWidth: 300,
+              wordBreak: "break-word",
+            }}
+          >
             {this.state.error.message}
           </div>
-          <button className="btn" onClick={() => this.setState({ error: null })}
-            style={{ fontFamily: "Tahoma, Arial, sans-serif", fontSize: 11, marginTop: 4 }}>
+          <button
+            className="btn"
+            onClick={() => this.setState({ error: null })}
+            style={{
+              fontFamily: "Tahoma, Arial, sans-serif",
+              fontSize: 11,
+              marginTop: 4,
+            }}
+          >
             Reload window
           </button>
         </div>
@@ -240,23 +367,63 @@ class WindowErrorBoundary extends Component<{ children: ReactNode; title: string
   }
 }
 
-interface DesktopProps { onShutdown?: (action: ShutdownAction) => void }
+interface DesktopProps {
+  onShutdown?: (action: ShutdownAction) => void;
+}
 
 export default function Desktop({ onShutdown }: DesktopProps) {
-  const [desktopState, setDesktopState] = useState<PersistedDesktopState>(() => restoreDesktopState());
+  const [desktopState, setDesktopState] = useState<PersistedDesktopState>(() =>
+    restoreDesktopState(),
+  );
   const { openWindows, activeId } = desktopState;
-  const [selectedIcon, setSelectedIcon]     = useState<WindowId | null>(null);
-  const [startOpen, setStartOpen]           = useState(false);
-  const [progOpen, setProgOpen]             = useState(false);
-  const [ctxMenu, setCtxMenu]               = useState<CtxMenu | null>(null);
-  const [shutdownOpen, setShutdownOpen]     = useState(false);
-  const [shutdownAction, setShutdownAction] = useState<ShutdownAction>("shutdown");
-  const [activeProject, setActiveProject]   = useState<ProjectData | null>(null);
-  const [wallpaper, setWallpaper]           = useState("#008080");
+  const [selectedIcon, setSelectedIcon] = useState<WindowId | null>(null);
+  const [startOpen, setStartOpen] = useState(false);
+  const [progOpen, setProgOpen] = useState(false);
+  const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null);
+  const [shutdownOpen, setShutdownOpen] = useState(false);
+  const [shutdownAction, setShutdownAction] =
+    useState<ShutdownAction>("shutdown");
+  const [activeProject, setActiveProject] = useState<ProjectData | null>(null);
+  const [wallpaper, setWallpaper] = useState("#008080");
+
+  const closeWindow = useCallback((id: WindowId) => {
+    setDesktopState((prev) => ({
+      openWindows: prev.openWindows.filter((w) => w.id !== id),
+      activeId: prev.activeId === id ? null : prev.activeId,
+    }));
+  }, []);
+  const focusWindow = useCallback((id: WindowId) => {
+    topZ++;
+    setDesktopState((prev) => ({
+      openWindows: prev.openWindows.map((w) =>
+        w.id === id ? { ...w, zIndex: topZ, minimized: false } : w,
+      ),
+      activeId: id,
+    }));
+  }, []);
+  const minimizeWindow = useCallback((id: WindowId) => {
+    setDesktopState((prev) => ({
+      openWindows: prev.openWindows.map((w) =>
+        w.id === id ? { ...w, minimized: true } : w,
+      ),
+      activeId: prev.activeId === id ? null : prev.activeId,
+    }));
+  }, []);
+  const moveWindow = useCallback((id: WindowId, x: number, y: number) => {
+    setDesktopState((prev) => ({
+      ...prev,
+      openWindows: prev.openWindows.map((w) =>
+        w.id === id ? { ...w, x, y } : w,
+      ),
+    }));
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(DESKTOP_STATE_STORAGE_KEY, JSON.stringify({ openWindows, activeId }));
+    window.localStorage.setItem(
+      DESKTOP_STATE_STORAGE_KEY,
+      JSON.stringify({ openWindows, activeId }),
+    );
   }, [activeId, openWindows]);
 
   useEffect(() => {
@@ -272,14 +439,18 @@ export default function Desktop({ onShutdown }: DesktopProps) {
         e.preventDefault();
         setDesktopState((prev) => {
           if (prev.openWindows.length === 0) return prev;
-          const ids = prev.openWindows.filter((w) => !w.minimized).map((w) => w.id);
+          const ids = prev.openWindows
+            .filter((w) => !w.minimized)
+            .map((w) => w.id);
           if (ids.length === 0) return prev;
           const idx = prev.activeId ? ids.indexOf(prev.activeId) : -1;
           const nextId = ids[(idx + 1) % ids.length];
           topZ++;
           return {
             ...prev,
-            openWindows: prev.openWindows.map((w) => w.id === nextId ? { ...w, zIndex: topZ } : w),
+            openWindows: prev.openWindows.map((w) =>
+              w.id === nextId ? { ...w, zIndex: topZ } : w,
+            ),
             activeId: nextId,
           };
         });
@@ -289,7 +460,11 @@ export default function Desktop({ onShutdown }: DesktopProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeId, closeWindow]);
 
-  const closeMenus = useCallback(() => { setStartOpen(false); setProgOpen(false); setCtxMenu(null); }, []);
+  const closeMenus = useCallback(() => {
+    setStartOpen(false);
+    setProgOpen(false);
+    setCtxMenu(null);
+  }, []);
 
   const openWindow = useCallback((id: string) => {
     if (!isWindowId(id)) return;
@@ -297,12 +472,20 @@ export default function Desktop({ onShutdown }: DesktopProps) {
       const existing = prev.openWindows.find((w) => w.id === id);
       topZ++;
       if (existing) {
-        return { openWindows: prev.openWindows.map((w) => w.id === id ? { ...w, zIndex: topZ, minimized: false } : w), activeId: id };
+        return {
+          openWindows: prev.openWindows.map((w) =>
+            w.id === id ? { ...w, zIndex: topZ, minimized: false } : w,
+          ),
+          activeId: id,
+        };
       }
       playWindowOpen();
       const pos = getSmartInitialPosition(id);
       return {
-        openWindows: [...prev.openWindows, { id, zIndex: topZ, x: pos.x, y: pos.y, minimized: false }],
+        openWindows: [
+          ...prev.openWindows,
+          { id, zIndex: topZ, x: pos.x, y: pos.y, minimized: false },
+        ],
         activeId: id,
       };
     });
@@ -314,86 +497,138 @@ export default function Desktop({ onShutdown }: DesktopProps) {
       const existing = prev.openWindows.find((w) => w.id === "project-detail");
       topZ++;
       if (existing) {
-        return { openWindows: prev.openWindows.map((w) => w.id === "project-detail" ? { ...w, zIndex: topZ, minimized: false } : w), activeId: "project-detail" };
+        return {
+          openWindows: prev.openWindows.map((w) =>
+            w.id === "project-detail"
+              ? { ...w, zIndex: topZ, minimized: false }
+              : w,
+          ),
+          activeId: "project-detail",
+        };
       }
       playWindowOpen();
       const pos = getSmartInitialPosition("project-detail");
       return {
-        openWindows: [...prev.openWindows, { id: "project-detail", zIndex: topZ, x: pos.x, y: pos.y, minimized: false }],
+        openWindows: [
+          ...prev.openWindows,
+          {
+            id: "project-detail",
+            zIndex: topZ,
+            x: pos.x,
+            y: pos.y,
+            minimized: false,
+          },
+        ],
         activeId: "project-detail",
       };
     });
   }, []);
 
-  const closeWindow    = useCallback((id: WindowId) => { setDesktopState((prev) => ({ openWindows: prev.openWindows.filter((w) => w.id !== id), activeId: prev.activeId === id ? null : prev.activeId })); }, []);
-  const focusWindow    = useCallback((id: WindowId) => { topZ++; setDesktopState((prev) => ({ openWindows: prev.openWindows.map((w) => w.id === id ? { ...w, zIndex: topZ, minimized: false } : w), activeId: id })); }, []);
-  const minimizeWindow = useCallback((id: WindowId) => { setDesktopState((prev) => ({ openWindows: prev.openWindows.map((w) => w.id === id ? { ...w, minimized: true } : w), activeId: prev.activeId === id ? null : prev.activeId })); }, []);
-  const moveWindow     = useCallback((id: WindowId, x: number, y: number) => { setDesktopState((prev) => ({ ...prev, openWindows: prev.openWindows.map((w) => w.id === id ? { ...w, x, y } : w) })); }, []);
-
-  const handleTaskbarClick = useCallback((win: WindowState) => {
-    if (win.minimized || activeId !== win.id) focusWindow(win.id); else minimizeWindow(win.id);
-  }, [activeId, focusWindow, minimizeWindow]);
+  const handleTaskbarClick = useCallback(
+    (win: WindowState) => {
+      if (win.minimized || activeId !== win.id) focusWindow(win.id);
+      else minimizeWindow(win.id);
+    },
+    [activeId, focusWindow, minimizeWindow],
+  );
 
   const handleDesktopCtx = (e: React.MouseEvent) => {
     e.preventDefault();
     closeMenus();
     setSelectedIcon(null);
-    setCtxMenu({ x: e.clientX, y: Math.min(e.clientY, window.innerHeight - 160) });
+    setCtxMenu({
+      x: e.clientX,
+      y: Math.min(e.clientY, window.innerHeight - 160),
+    });
   };
 
   // ── Window content renderer ────────────────────────────────────────────────
-  const renderWindowContent = useCallback((id: WindowId): ReactNode => {
-    switch (id) {
-      case "showcase":
-        // ✅ Fixed: removed ownerName/ownerTitle — new ShowcaseWindow only takes onOpen
-        return <ShowcaseWindow onOpen={openWindow} />;
-      case "about":
-        return <AboutWindow />;
-      case "experience":
-        return <ExperienceWindow />;
-      case "projects":
-        return <ProjectsWindow />;
-      case "project-detail":
-        return activeProject ? <ProjectDetailWindow {...activeProject} /> : null;
-      case "contact":
-        return <ContactWindow />;
-      case "wolfenstein":
-        return <WolfensteinWindow />;
-      case "netflix":
-        return <NetflixWindow />;
-      case "msn":
-        return <MSNWindow />;
-      case "notepad":
-        return <NotepadWindow />;
-      case "settings":
-        return <SettingsWindow onWallpaperChange={(wp) => setWallpaper(wp.value)} />;
-      case "run":
-        return <RunDialog onOpen={openWindow} onClose={() => closeWindow("run")} />;
-      case "internet-explorer":
-        return <InternetExplorerWindow />;
-      default:
-        return null;
-    }
-  }, [openWindow, openProjectDetail, closeWindow, activeProject]);
+  const renderWindowContent = useCallback(
+    (id: WindowId): ReactNode => {
+      switch (id) {
+        case "showcase":
+          // ✅ Fixed: removed ownerName/ownerTitle — new ShowcaseWindow only takes onOpen
+          return <ShowcaseWindow onOpen={openWindow} />;
+        case "about":
+          return <AboutWindow />;
+        case "experience":
+          return <ExperienceWindow />;
+        case "projects":
+          return <ProjectsWindow />;
+        case "project-detail":
+          return activeProject ? (
+            <ProjectDetailWindow {...activeProject} />
+          ) : null;
+        case "contact":
+          return <ContactWindow />;
+        case "wolfenstein":
+          return <WolfensteinWindow />;
+        case "netflix":
+          return <NetflixWindow />;
+        case "msn":
+          return <MSNWindow />;
+        case "notepad":
+          return <NotepadWindow />;
+        case "settings":
+          return (
+            <SettingsWindow
+              onWallpaperChange={(wp) => setWallpaper(wp.value)}
+            />
+          );
+        case "run":
+          return (
+            <RunDialog onOpen={openWindow} onClose={() => closeWindow("run")} />
+          );
+        case "internet-explorer":
+          return <InternetExplorerWindow />;
+        default:
+          return null;
+      }
+    },
+    [openWindow, openProjectDetail, closeWindow, activeProject],
+  );
 
   return (
     <div
       className="desktop-root"
       style={{ background: wallpaper }}
-      onMouseDown={(e) => { if (e.target === e.currentTarget) setSelectedIcon(null); closeMenus(); }}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) setSelectedIcon(null);
+        closeMenus();
+      }}
       onContextMenu={handleDesktopCtx}
     >
       {/* ── Icons ─────────────────────────────────────────────────────────── */}
       <div className="desktop-icons-col">
         {ICONS.map(({ id, label, Icon }) => (
-          <div key={id} className={`desktop-icon${selectedIcon === id ? " selected" : ""}`}
-            role="button" tabIndex={0}
-            onClick={(e) => { e.stopPropagation(); setSelectedIcon(id); }}
-            onDoubleClick={(e) => { e.stopPropagation(); setSelectedIcon(id); openWindow(id); closeMenus(); }}
+          <div
+            key={id}
+            className={`desktop-icon${selectedIcon === id ? " selected" : ""}`}
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedIcon(id);
+            }}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              setSelectedIcon(id);
+              openWindow(id);
+              closeMenus();
+            }}
             onFocus={() => setSelectedIcon(id)}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedIcon(id); openWindow(id); closeMenus(); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setSelectedIcon(id);
+                openWindow(id);
+                closeMenus();
+              }
+            }}
           >
-            <div className="icon-image"><Icon size={32} /></div>
+            <div className="icon-image">
+              <Icon size={32} />
+            </div>
             <div className="icon-label">{label}</div>
           </div>
         ))}
@@ -402,14 +637,27 @@ export default function Desktop({ onShutdown }: DesktopProps) {
       {/* ── Windows ───────────────────────────────────────────────────────── */}
       {openWindows.map((win) => {
         const config = WINDOW_CONFIG[win.id];
-        const title = win.id === "project-detail" && activeProject ? activeProject.name : config.title;
+        const title =
+          win.id === "project-detail" && activeProject
+            ? activeProject.name
+            : config.title;
         const { Icon, width, height } = config;
         return (
-          <OsWindow key={win.id} title={title} icon={<Icon size={14} />}
-            onClose={() => closeWindow(win.id)} onMinimize={() => minimizeWindow(win.id)}
-            x={win.x} y={win.y} width={width} height={height} zIndex={win.zIndex}
-            onFocus={() => focusWindow(win.id)} onMove={(x, y) => moveWindow(win.id, x, y)}
-            isActive={activeId === win.id && !win.minimized} minimized={win.minimized}
+          <OsWindow
+            key={win.id}
+            title={title}
+            icon={<Icon size={14} />}
+            onClose={() => closeWindow(win.id)}
+            onMinimize={() => minimizeWindow(win.id)}
+            x={win.x}
+            y={win.y}
+            width={width}
+            height={height}
+            zIndex={win.zIndex}
+            onFocus={() => focusWindow(win.id)}
+            onMove={(x, y) => moveWindow(win.id, x, y)}
+            isActive={activeId === win.id && !win.minimized}
+            minimized={win.minimized}
             className={win.id === "wolfenstein" ? "os-win-game" : ""}
           >
             <WindowErrorBoundary title={title}>
@@ -428,7 +676,12 @@ export default function Desktop({ onShutdown }: DesktopProps) {
       <header className="header os-taskbar">
         <button
           className={`btn logo os-start-btn${startOpen ? " start-active" : ""}`}
-          onClick={(e) => { e.stopPropagation(); setStartOpen((v) => !v); setProgOpen(false); setCtxMenu(null); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setStartOpen((v) => !v);
+            setProgOpen(false);
+            setCtxMenu(null);
+          }}
         >
           <IconWindowsLogo size={16} />
           Start
@@ -436,36 +689,75 @@ export default function Desktop({ onShutdown }: DesktopProps) {
         <div className="os-taskbar-sep" />
         {openWindows.map((win) => {
           const config = WINDOW_CONFIG[win.id];
-          const title = win.id === "project-detail" && activeProject ? activeProject.name : config.title;
+          const title =
+            win.id === "project-detail" && activeProject
+              ? activeProject.name
+              : config.title;
           const { Icon } = config;
           const isActive = activeId === win.id && !win.minimized;
           return (
-            <button key={win.id} className={`nav-item os-titem${isActive ? " is-active" : ""}`}
-              onClick={(e) => { e.stopPropagation(); handleTaskbarClick(win); }}
+            <button
+              key={win.id}
+              className={`nav-item os-titem${isActive ? " is-active" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTaskbarClick(win);
+              }}
             >
-              <span className="os-titem-icon"><Icon size={16} /></span>
+              <span className="os-titem-icon">
+                <Icon size={16} />
+              </span>
               <span className="os-titem-label">{title}</span>
             </button>
           );
         })}
         <div className="os-taskbar-spacer" />
-        <div className="os-taskbar-clock"><Clock /></div>
+        <div className="os-taskbar-clock">
+          <Clock />
+        </div>
       </header>
 
       {/* ── Start Menu ────────────────────────────────────────────────────── */}
       {startOpen && (
-        <div className="start-menu" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-          <div className="start-menu-sidebar"><span className="start-menu-brand">Windows 95</span></div>
-          <div className="start-menu-items" onMouseLeave={() => setProgOpen(false)}>
-            <div className="start-menu-item has-submenu" onMouseEnter={() => setProgOpen(true)} onClick={(e) => { e.stopPropagation(); setProgOpen((v) => !v); }}>
-              <span className="start-item-icon"><IconFolder size={16} /></span>
+        <div
+          className="start-menu"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="start-menu-sidebar">
+            <span className="start-menu-brand">Windows 95</span>
+          </div>
+          <div
+            className="start-menu-items"
+            onMouseLeave={() => setProgOpen(false)}
+          >
+            <div
+              className="start-menu-item has-submenu"
+              onMouseEnter={() => setProgOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setProgOpen((v) => !v);
+              }}
+            >
+              <span className="start-item-icon">
+                <IconFolder size={16} />
+              </span>
               <span className="start-item-label">Programs</span>
               <span className="start-item-arrow">▶</span>
               {progOpen && (
                 <div className="start-submenu">
                   {ICONS.map(({ id, label, Icon }) => (
-                    <div key={id} className="start-menu-item" onClick={() => { openWindow(id); closeMenus(); }}>
-                      <span className="start-item-icon"><Icon size={16} /></span>
+                    <div
+                      key={id}
+                      className="start-menu-item"
+                      onClick={() => {
+                        openWindow(id);
+                        closeMenus();
+                      }}
+                    >
+                      <span className="start-item-icon">
+                        <Icon size={16} />
+                      </span>
                       <span className="start-item-label">{label}</span>
                     </div>
                   ))}
@@ -473,16 +765,37 @@ export default function Desktop({ onShutdown }: DesktopProps) {
               )}
             </div>
             <div className="start-menu-sep" />
-            <div className="start-menu-item" onMouseEnter={() => setProgOpen(false)} onClick={() => { openWindow("run"); closeMenus(); }}>
+            <div
+              className="start-menu-item"
+              onMouseEnter={() => setProgOpen(false)}
+              onClick={() => {
+                openWindow("run");
+                closeMenus();
+              }}
+            >
               <span className="start-item-icon">🖥</span>
               <span className="start-item-label">Run...</span>
             </div>
-            <div className="start-menu-item" onMouseEnter={() => setProgOpen(false)} onClick={() => { openWindow("settings"); closeMenus(); }}>
+            <div
+              className="start-menu-item"
+              onMouseEnter={() => setProgOpen(false)}
+              onClick={() => {
+                openWindow("settings");
+                closeMenus();
+              }}
+            >
               <span className="start-item-icon">⚙️</span>
               <span className="start-item-label">Settings</span>
             </div>
             <div className="start-menu-sep" />
-            <div className="start-menu-item" onMouseEnter={() => setProgOpen(false)} onClick={() => { closeMenus(); setShutdownOpen(true); }}>
+            <div
+              className="start-menu-item"
+              onMouseEnter={() => setProgOpen(false)}
+              onClick={() => {
+                closeMenus();
+                setShutdownOpen(true);
+              }}
+            >
               <span className="start-item-icon">⏻</span>
               <span className="start-item-label">Shut Down...</span>
             </div>
@@ -492,50 +805,130 @@ export default function Desktop({ onShutdown }: DesktopProps) {
 
       {/* ── Context Menu ──────────────────────────────────────────────────── */}
       {ctxMenu && (
-        <div className="ctx-menu" style={{ left: ctxMenu.x, top: ctxMenu.y }}
-          onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-          <div className="ctx-menu-item" onClick={closeMenus}>Arrange Icons</div>
-          <div className="ctx-menu-item" onClick={closeMenus}>Refresh</div>
+        <div
+          className="ctx-menu"
+          style={{ left: ctxMenu.x, top: ctxMenu.y }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="ctx-menu-item" onClick={closeMenus}>
+            Arrange Icons
+          </div>
+          <div className="ctx-menu-item" onClick={closeMenus}>
+            Refresh
+          </div>
           <div className="ctx-menu-sep" />
-          <div className="ctx-menu-item" onClick={() => { closeMenus(); openWindow("projects"); }}>Open Projects</div>
-          <div className="ctx-menu-item" onClick={() => { closeMenus(); openWindow("run"); }}>Run...</div>
+          <div
+            className="ctx-menu-item"
+            onClick={() => {
+              closeMenus();
+              openWindow("projects");
+            }}
+          >
+            Open Projects
+          </div>
+          <div
+            className="ctx-menu-item"
+            onClick={() => {
+              closeMenus();
+              openWindow("run");
+            }}
+          >
+            Run...
+          </div>
           <div className="ctx-menu-sep" />
-          <div className="ctx-menu-item" onClick={() => { closeMenus(); openWindow("settings"); }}>Display Properties</div>
-          <div className="ctx-menu-item" onClick={() => { closeMenus(); openWindow("about"); }}>About This Site</div>
+          <div
+            className="ctx-menu-item"
+            onClick={() => {
+              closeMenus();
+              openWindow("settings");
+            }}
+          >
+            Display Properties
+          </div>
+          <div
+            className="ctx-menu-item"
+            onClick={() => {
+              closeMenus();
+              openWindow("about");
+            }}
+          >
+            About This Site
+          </div>
         </div>
       )}
 
       {/* ── Shutdown Dialog ───────────────────────────────────────────────── */}
       {shutdownOpen && (
-        <div className="shutdown-overlay" onClick={() => setShutdownOpen(false)}>
-          <div className="dialog shutdown-dialog" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="shutdown-overlay"
+          onClick={() => setShutdownOpen(false)}
+        >
+          <div
+            className="dialog shutdown-dialog"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="dialog-header" style={{ cursor: "default" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <IconMyComputer size={14} />
-                <span style={{ fontFamily: "Tahoma, Arial, sans-serif", fontSize: 12, fontWeight: "bold" }}>
+                <span
+                  style={{
+                    fontFamily: "Tahoma, Arial, sans-serif",
+                    fontSize: 12,
+                    fontWeight: "bold",
+                  }}
+                >
                   Shut Down Windows
                 </span>
               </div>
             </div>
-            <div className="dialog-body shutdown-body" style={{ background: "var(--color-gray-200)" }}>
+            <div
+              className="dialog-body shutdown-body"
+              style={{ background: "var(--color-gray-200)" }}
+            >
               <div className="shutdown-top-row">
                 <span className="shutdown-big-icon">⏻</span>
                 <div>
-                  <div className="shutdown-question">What do you want the computer to do?</div>
+                  <div className="shutdown-question">
+                    What do you want the computer to do?
+                  </div>
                   <div className="shutdown-opts">
-                    {(["shutdown", "restart", "dos"] as ShutdownAction[]).map((action) => (
-                      <label key={action} className="shutdown-opt">
-                        <input type="radio" name="sd" checked={shutdownAction === action} onChange={() => setShutdownAction(action)} />
-                        {action === "shutdown" ? "Shut down the computer" : action === "restart" ? "Restart the computer" : "Restart in MS-DOS mode"}
-                      </label>
-                    ))}
+                    {(["shutdown", "restart", "dos"] as ShutdownAction[]).map(
+                      (action) => (
+                        <label key={action} className="shutdown-opt">
+                          <input
+                            type="radio"
+                            name="sd"
+                            checked={shutdownAction === action}
+                            onChange={() => setShutdownAction(action)}
+                          />
+                          {action === "shutdown"
+                            ? "Shut down the computer"
+                            : action === "restart"
+                              ? "Restart the computer"
+                              : "Restart in MS-DOS mode"}
+                        </label>
+                      ),
+                    )}
                   </div>
                 </div>
               </div>
               <div className="shutdown-footer">
-                <button className="btn" onClick={() => { setShutdownOpen(false); onShutdown?.(shutdownAction); }}>OK</button>
-                <button className="btn" onClick={() => setShutdownOpen(false)}>Cancel</button>
-                <button className="btn" onClick={() => setShutdownOpen(false)}>Help</button>
+                <button
+                  className="btn"
+                  onClick={() => {
+                    setShutdownOpen(false);
+                    onShutdown?.(shutdownAction);
+                  }}
+                >
+                  OK
+                </button>
+                <button className="btn" onClick={() => setShutdownOpen(false)}>
+                  Cancel
+                </button>
+                <button className="btn" onClick={() => setShutdownOpen(false)}>
+                  Help
+                </button>
               </div>
             </div>
           </div>

@@ -1,5 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { unlockAudio } from "../sounds";
 
 // ─── Easing ────────────────────────────────────────────────────────────────────
@@ -11,6 +14,59 @@ function easeInCubic(t: number) {
 }
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
+}
+
+// ─── Procedural textures ───────────────────────────────────────────────────────
+function makeNightSkyTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 384;
+  const ctx = canvas.getContext("2d")!;
+  const grad = ctx.createLinearGradient(0, 0, 0, 384);
+  grad.addColorStop(0, "#08082a");
+  grad.addColorStop(0.4, "#0e0e38");
+  grad.addColorStop(0.7, "#1a1a3e");
+  grad.addColorStop(1, "#2a2030");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 384);
+  for (let i = 0; i < 120; i++) {
+    const b = 0.3 + Math.random() * 0.7;
+    ctx.fillStyle = `rgba(255,255,255,${b})`;
+    ctx.beginPath();
+    ctx.arc(Math.random() * 512, Math.random() * 384, Math.random() * 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = "#fffbe8";
+  ctx.beginPath();
+  ctx.arc(420, 90, 32, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,251,232,0.08)";
+  ctx.beginPath();
+  ctx.arc(420, 90, 52, 0, Math.PI * 2);
+  ctx.fill();
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
+function makePaperGrainTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d")!;
+  const data = ctx.createImageData(128, 128);
+  for (let i = 0; i < data.data.length; i += 4) {
+    const v = 200 + Math.random() * 55;
+    data.data[i] = v;
+    data.data[i + 1] = v;
+    data.data[i + 2] = v;
+    data.data[i + 3] = 40;
+  }
+  ctx.putImageData(data, 0, 0);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(4, 4);
+  return tex;
 }
 
 // ─── Monitor screen: scrolling BIOS POST text ─────────────────────────────────
@@ -916,7 +972,7 @@ function addPoster(
   const W = 0.52,
     H = 0.78;
 
-  // Poster plane
+  const paperGrainTex = makePaperGrainTexture();
   const geo = new THREE.PlaneGeometry(W, H);
   const mat = new THREE.MeshStandardMaterial({
     map: tex,
@@ -926,6 +982,8 @@ function addPoster(
     polygonOffset: true,
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
+    bumpMap: paperGrainTex,
+    bumpScale: 0.003,
   });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(px, py, pz);
@@ -1171,6 +1229,35 @@ function buildScene(): SceneObjects {
     Math.PI / 2,
     0,
   );
+
+  // ── Ceiling ────────────────────────────────────────────────────────────────
+  add(box(20, 0.1, 12), mat("#d8d0c0", 0.95, 0), 0, 10.05, 0);
+
+  // ── Window with night sky (back wall) ──────────────────────────────────────
+  const windowFrameMat = mat("#3a3028", 0.6, 0.3);
+  const windowGlassMat = new THREE.MeshStandardMaterial({
+    map: makeNightSkyTexture(),
+    roughness: 0.1,
+    metalness: 0,
+    transparent: true,
+    opacity: 0.85,
+    side: THREE.DoubleSide,
+  });
+  const WX = 2.8;
+  const WW = 2.6;
+  const WH = 2.2;
+  const WY = 6.2;
+  add(box(WW + 0.12, 0.06, 0.1), windowFrameMat, WX, WY + WH / 2 + 0.02, -3.93);
+  add(box(WW + 0.12, 0.06, 0.1), windowFrameMat, WX, WY - 0.02, -3.93);
+  add(box(0.06, WH + 0.1, 0.1), windowFrameMat, WX - WW / 2 - 0.03, WY + WH / 2, -3.93);
+  add(box(0.06, WH + 0.1, 0.1), windowFrameMat, WX + WW / 2 + 0.03, WY + WH / 2, -3.93);
+  add(box(WW, WH, 0.04), windowGlassMat, WX, WY + WH / 2, -3.92);
+  add(box(0.04, WH, 0.06), windowFrameMat, WX, WY + WH / 2, -3.92);
+  add(box(WW, 0.04, 0.06), windowFrameMat, WX, WY + WH / 2, -3.92);
+  // Window light glow
+  const windowGlow = new THREE.PointLight("#4060ff", 0.15, 8);
+  windowGlow.position.set(WX, WY + WH / 2, -3.5);
+  scene.add(windowGlow);
 
   // ── Upgraded Desk — dark walnut, wide L-ish surface, metal legs ───────────
   // Main surface — wider and deeper for dual monitor setup
@@ -1515,7 +1602,11 @@ function buildScene(): SceneObjects {
   scene.add(handle);
   add(
     cyl(0.048, 0.048, 0.005, 12),
-    mat("#0a0704", 0.9, 0),
+    new THREE.MeshStandardMaterial({
+      color: "#0a0704",
+      roughness: 0.3,
+      metalness: 0.4,
+    }),
     -0.62,
     DESK_TOP + 0.114,
     0.52,
@@ -2698,6 +2789,35 @@ export default function LandingScene({
 
     const { scene, screenGlow, screenGlow2, updateScreen, updateAmbient } = buildScene();
 
+    // ── Environment map for reflections ──────────────────────────────────────
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envCanvas = document.createElement("canvas");
+    envCanvas.width = 256;
+    envCanvas.height = 256;
+    const ectx = envCanvas.getContext("2d")!;
+    const eg = ectx.createLinearGradient(0, 0, 0, 256);
+    eg.addColorStop(0, "#1a1a2e");
+    eg.addColorStop(0.3, "#2a2040");
+    eg.addColorStop(0.5, "#e8d5b7");
+    eg.addColorStop(0.7, "#c8a87c");
+    eg.addColorStop(1, "#3d2210");
+    ectx.fillStyle = eg;
+    ectx.fillRect(0, 0, 256, 256);
+    const envTex = new THREE.CanvasTexture(envCanvas);
+    envTex.mapping = THREE.EquirectangularReflectionMapping;
+    scene.environment = pmrem.fromEquirectangular(envTex).texture;
+    pmrem.dispose();
+    envTex.dispose();
+
+    // ── Post-processing: CRT bloom ───────────────────────────────────────────
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(canvas.clientWidth, canvas.clientHeight),
+      0.25, 0.5, 0.08,
+    );
+    composer.addPass(bloomPass);
+
     let curAzimuth = isShutdownMode ? ZOOM_END.azimuth : IDLE.azimuth;
     let curElevation = isShutdownMode ? ZOOM_END.elevation : IDLE.elevation;
     let curRadius = isShutdownMode ? ZOOM_END.radius : IDLE.radius;
@@ -2804,22 +2924,36 @@ export default function LandingScene({
       if (rLed) (rLed.material as THREE.MeshBasicMaterial).color.setHSL(0.4, 1, 0.3 * ledBrightness);
 
       updateAmbient(t);
-      renderer.render(scene, camera);
+      composer.render();
     };
     rafId = requestAnimationFrame(animate);
 
+    let resizeTimer: number;
     const onResize = () => {
-      const w = canvas.clientWidth,
-        h = canvas.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h, false);
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        const w = canvas.clientWidth,
+          h = canvas.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h, false);
+        composer.setSize(w, h);
+      }, 100);
     };
     window.addEventListener("resize", onResize);
 
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", onResize);
+      clearTimeout(resizeTimer);
+      scene.traverse((obj) => {
+        if (obj instanceof THREE.Mesh) {
+          obj.geometry.dispose();
+          const m = obj.material;
+          if (Array.isArray(m)) m.forEach((mm) => mm.dispose());
+          else m.dispose();
+        }
+      });
       renderer.dispose();
     };
   }, [isShutdownMode]);
