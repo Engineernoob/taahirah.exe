@@ -2702,6 +2702,12 @@ const ZOOM_END = {
   radius: 1.1,
 };
 
+const BLOOM_STRENGTH = 0.08;
+const BLOOM_RADIUS = 0.32;
+const BLOOM_THRESHOLD = 0.18;
+const SCREEN_GLOW_IDLE = 0.85;
+const SCREEN_GLOW_CLOSE = 1.45;
+
 // ─── Component ────────────────────────────────────────────────────────────────
 interface LandingSceneProps {
   onStart: () => void;
@@ -2777,6 +2783,9 @@ export default function LandingScene({
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.9;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 
@@ -2805,7 +2814,8 @@ export default function LandingScene({
     ectx.fillRect(0, 0, 256, 256);
     const envTex = new THREE.CanvasTexture(envCanvas);
     envTex.mapping = THREE.EquirectangularReflectionMapping;
-    scene.environment = pmrem.fromEquirectangular(envTex).texture;
+    const envMap = pmrem.fromEquirectangular(envTex);
+    scene.environment = envMap.texture;
     pmrem.dispose();
     envTex.dispose();
 
@@ -2814,7 +2824,9 @@ export default function LandingScene({
     composer.addPass(new RenderPass(scene, camera));
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(canvas.clientWidth, canvas.clientHeight),
-      0.25, 0.5, 0.08,
+      BLOOM_STRENGTH,
+      BLOOM_RADIUS,
+      BLOOM_THRESHOLD,
     );
     composer.addPass(bloomPass);
 
@@ -2912,7 +2924,7 @@ export default function LandingScene({
       // CRT glow: warm pulse + random micro-flicker for cathode ray feel
       const pulse = 0.85 + Math.sin(t * 2.1) * 0.12;
       const flicker = 1 + (Math.random() - 0.5) * 0.04;
-      const baseIntensity = lerp(1.2, 2.4, zoomT);
+      const baseIntensity = lerp(SCREEN_GLOW_IDLE, SCREEN_GLOW_CLOSE, zoomT);
       screenGlow.intensity = baseIntensity * pulse * flicker;
       screenGlow2.intensity = baseIntensity * 0.15 * (0.8 + Math.sin(t * 3.7 + 1.3) * 0.2);
 
@@ -2954,6 +2966,8 @@ export default function LandingScene({
           else m.dispose();
         }
       });
+      composer.dispose();
+      envMap.dispose();
       renderer.dispose();
     };
   }, [isShutdownMode]);
