@@ -14,14 +14,80 @@ type Category = "Devlog" | "Experiments" | "Thoughts" | "Career";
 
 // Content block types for rich formatting
 type ContentBlock =
-  | { type: "p";    text: string }
-  | { type: "h3";   text: string }
-  | { type: "ul";   items: string[] }
+  | { type: "p"; text: string }
+  | { type: "h3"; text: string }
+  | { type: "ul"; items: string[] }
   | { type: "code"; text: string }
   | { type: "hr" };
 
 // ── Posts ─────────────────────────────────────────────────────────────────────
 const POSTS: BlogPost[] = [
+  {
+    id: "flipping-burgers-and-writing-code",
+    title: "Flipping Burgers and Writing Code",
+    date: "June 13, 2026",
+    category: "Career",
+    excerpt:
+      "I just started at Five Guys while carrying a full-time course load. Here's what it actually looks like to grind two things at once — and why I'm okay with it.",
+    content: [
+      {
+        type: "p",
+        text: "Let me just say it plainly: I am a software engineering intern turned full-time CS student who just started slinging burgers at Five Guys. And I am completely at peace with that.",
+      },
+      {
+        type: "p",
+        text: "The job search has been brutal. 174+ applications since March. Strong-fit roles. Tailored resumes. Cold outreach to founders. Near-zero response rate. The market right now is genuinely punishing for early-career engineers — and I've had to get real about what that means for my day-to-day life while I keep pushing.",
+      },
+      { type: "h3", text: "Why Five Guys" },
+      {
+        type: "p",
+        text: "Rent doesn't pause because the job market is rough. Bills don't care about your GitHub. I took the job because it was available, it pays, and I already have a culinary background — line cook, pastry prep, breakfast cook. I know how kitchens work. Five Guys is fast, loud, and straightforward. It fits.",
+      },
+      {
+        type: "p",
+        text: "I'm not embarrassed about it. If anything, I think there's something clarifying about physical work when the rest of your life is spent staring at a terminal. You show up, you do the thing, you go home. No ambiguity. No async feedback loops.",
+      },
+      {
+        type: "h3",
+        text: "What Full-Time Student + Part-Time Job Actually Looks Like",
+      },
+      {
+        type: "p",
+        text: "Right now I'm carrying 12+ credits at Lewis University. That's four courses, deadlines every week, and the kind of mental load that follows you around even when you're not actively studying. Adding a part-time job on top means the schedule is just... full.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Classes in the morning, shifts in the evening — most days have both",
+          "Homework happens in gaps: lunch breaks, between close and sleep, early mornings",
+          "Personal projects (SENTINEL, HireCtl, the portfolio) get weekend time and late nights",
+          "The job search runs in parallel — still applying, still coding challenges, still following up",
+        ],
+      },
+      {
+        type: "p",
+        text: "It's a lot. I'm not going to pretend it isn't. But it's also temporary, and I know exactly what I'm working toward.",
+      },
+      { type: "h3", text: "The Honest Part" },
+      {
+        type: "p",
+        text: "Some days I get home from a closing shift with grease on my shoes and open my laptop to work on a FastAPI backend or push a fix to the portfolio. That's just what it is right now. I'm not romanticizing the grind — I'm just in it.",
+      },
+      {
+        type: "p",
+        text: "The thing that keeps it from feeling like a spiral is having a clear picture of what changes when I land the engineering role. The job at Five Guys ends. The debt shrinks. The projects stop being side work and start being the main event.",
+      },
+      { type: "h3", text: "What I Actually Think About This" },
+      {
+        type: "p",
+        text: "I think it's okay to be mid-journey. I think it's okay for the LinkedIn profile to show a gap and a fast food job while the real story is happening in the background — in the GitHub commits, in the rejection board that keeps growing, in the coding challenges I'm still submitting.",
+      },
+      {
+        type: "p",
+        text: "The offer is coming. Until it does, I'll be at the grill.",
+      },
+    ],
+  },
   {
     id: "building-a-retro-desktop-portfolio",
     title: "Building a Retro Desktop Portfolio",
@@ -105,10 +171,7 @@ const POSTS: BlogPost[] = [
       },
       {
         type: "code",
-        text: `// Virtual FS node
-type FSNode =
-  | { kind: "file";   content: string }
-  | { kind: "dir";    children: Map<string, FSNode> };`,
+        text: `// Virtual FS node\ntype FSNode =\n  | { kind: "file";   content: string }\n  | { kind: "dir";    children: Map<string, FSNode> };`,
       },
       {
         type: "p",
@@ -304,15 +367,16 @@ type FSNode =
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const CATEGORY_COLORS: Record<Category, string> = {
-  Devlog:      "#000080",
+  Devlog: "#000080",
   Experiments: "#8b0000",
-  Thoughts:    "#1a5c1a",
-  Career:      "#5a3a00",
+  Thoughts: "#1a5c1a",
+  Career: "#5a3a00",
 };
 
 function readingTime(blocks: ContentBlock[]): number {
   const words = blocks.reduce((acc, b) => {
-    if (b.type === "p" || b.type === "h3" || b.type === "code") return acc + b.text.split(" ").length;
+    if (b.type === "p" || b.type === "h3" || b.type === "code")
+      return acc + b.text.split(" ").length;
     if (b.type === "ul") return acc + b.items.join(" ").split(" ").length;
     return acc;
   }, 0);
@@ -330,28 +394,34 @@ function renderBlock(block: ContentBlock, i: number) {
   switch (block.type) {
     case "h3":
       return (
-        <p key={i} style={{
-          margin: "14px 0 6px",
-          fontWeight: "bold",
-          fontSize: 12,
-          fontFamily: "Tahoma, Arial, sans-serif",
-          color: "#000080",
-          borderBottom: "1px solid #c0c0c0",
-          paddingBottom: 3,
-        }}>
+        <p
+          key={i}
+          style={{
+            margin: "14px 0 6px",
+            fontWeight: "bold",
+            fontSize: 12,
+            fontFamily: "Tahoma, Arial, sans-serif",
+            color: "#000080",
+            borderBottom: "1px solid #c0c0c0",
+            paddingBottom: 3,
+          }}
+        >
           {block.text}
         </p>
       );
     case "ul":
       return (
-        <ul key={i} style={{
-          margin: "0 0 12px 18px",
-          padding: 0,
-          fontSize: 12,
-          lineHeight: 1.8,
-          color: "#222",
-          fontFamily: "Tahoma, Arial, sans-serif",
-        }}>
+        <ul
+          key={i}
+          style={{
+            margin: "0 0 12px 18px",
+            padding: 0,
+            fontSize: 12,
+            lineHeight: 1.8,
+            color: "#222",
+            fontFamily: "Tahoma, Arial, sans-serif",
+          }}
+        >
           {block.items.map((item, j) => (
             <li key={j}>{item}</li>
           ))}
@@ -359,19 +429,22 @@ function renderBlock(block: ContentBlock, i: number) {
       );
     case "code":
       return (
-        <pre key={i} style={{
-          margin: "0 0 12px",
-          padding: "8px 10px",
-          background: "#1e1e1e",
-          color: "#d4d4d4",
-          fontSize: 11,
-          fontFamily: "'Courier New', monospace",
-          border: "2px solid",
-          borderColor: "#808080 #fff #fff #808080",
-          overflowX: "auto",
-          lineHeight: 1.6,
-          whiteSpace: "pre",
-        }}>
+        <pre
+          key={i}
+          style={{
+            margin: "0 0 12px",
+            padding: "8px 10px",
+            background: "#1e1e1e",
+            color: "#d4d4d4",
+            fontSize: 11,
+            fontFamily: "'Courier New', monospace",
+            border: "2px solid",
+            borderColor: "#808080 #fff #fff #808080",
+            overflowX: "auto",
+            lineHeight: 1.6,
+            whiteSpace: "pre",
+          }}
+        >
           {block.text}
         </pre>
       );
@@ -384,13 +457,16 @@ function renderBlock(block: ContentBlock, i: number) {
       );
     default: // "p"
       return (
-        <p key={i} style={{
-          margin: "0 0 12px",
-          lineHeight: 1.75,
-          color: "#222",
-          fontSize: 12,
-          fontFamily: "Tahoma, Arial, sans-serif",
-        }}>
+        <p
+          key={i}
+          style={{
+            margin: "0 0 12px",
+            lineHeight: 1.75,
+            color: "#222",
+            fontSize: 12,
+            fontFamily: "Tahoma, Arial, sans-serif",
+          }}
+        >
           {block.text}
         </p>
       );
@@ -405,47 +481,52 @@ export default function Blog() {
   const filteredPosts = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return POSTS;
-    return POSTS.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q) ||
-      p.excerpt.toLowerCase().includes(q)
+    return POSTS.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.excerpt.toLowerCase().includes(q),
     );
   }, [search]);
 
   const selectedPost =
-    filteredPosts.find(p => p.id === selectedId) ?? filteredPosts[0] ?? null;
+    filteredPosts.find((p) => p.id === selectedId) ?? filteredPosts[0] ?? null;
 
   return (
-    <div style={{
-      height: "100%",
-      display: "grid",
-      gridTemplateColumns: "220px 1fr",
-      fontFamily: "Tahoma, Arial, sans-serif",
-      fontSize: 12,
-      overflow: "hidden",
-    }}>
-
-      {/* ── Left pane — post list ───────────────────────────────────────────── */}
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        borderRight: "2px solid",
-        borderColor: "#808080 #fff #fff #808080",
-        background: "var(--color-gray-200, #c0c0c0)",
+    <div
+      style={{
+        height: "100%",
+        display: "grid",
+        gridTemplateColumns: "220px 1fr",
+        fontFamily: "Tahoma, Arial, sans-serif",
+        fontSize: 12,
         overflow: "hidden",
-      }}>
-
+      }}
+    >
+      {/* ── Left pane — post list ───────────────────────────────────────────── */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          borderRight: "2px solid",
+          borderColor: "#808080 #fff #fff #808080",
+          background: "var(--color-gray-200, #c0c0c0)",
+          overflow: "hidden",
+        }}
+      >
         {/* Search bar */}
-        <div style={{
-          padding: "5px 6px",
-          borderBottom: "1px solid #808080",
-          background: "#c0c0c0",
-        }}>
+        <div
+          style={{
+            padding: "5px 6px",
+            borderBottom: "1px solid #808080",
+            background: "#c0c0c0",
+          }}
+        >
           <input
             className="field"
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="🔍 Search posts..."
             style={{
               width: "100%",
@@ -463,7 +544,7 @@ export default function Blog() {
               No posts found.
             </div>
           ) : (
-            filteredPosts.map(post => {
+            filteredPosts.map((post) => {
               const active = selectedPost?.id === post.id;
               const mins = readingTime(post.content);
               const fresh = isNew(post.date);
@@ -485,36 +566,46 @@ export default function Blog() {
                   }}
                 >
                   {/* Title row */}
-                  <div style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 4,
-                    fontWeight: "bold",
-                    fontSize: 11,
-                    marginBottom: 3,
-                    lineHeight: 1.3,
-                  }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 4,
+                      fontWeight: "bold",
+                      fontSize: 11,
+                      marginBottom: 3,
+                      lineHeight: 1.3,
+                    }}
+                  >
                     <span style={{ flex: 1 }}>{post.title}</span>
                     {fresh && (
-                      <span style={{
-                        fontSize: 8,
-                        padding: "1px 3px",
-                        background: active ? "rgba(255,255,255,0.25)" : "#cc0000",
-                        color: "#fff",
-                        flexShrink: 0,
-                        marginTop: 1,
-                      }}>NEW</span>
+                      <span
+                        style={{
+                          fontSize: 8,
+                          padding: "1px 3px",
+                          background: active
+                            ? "rgba(255,255,255,0.25)"
+                            : "#cc0000",
+                          color: "#fff",
+                          flexShrink: 0,
+                          marginTop: 1,
+                        }}
+                      >
+                        NEW
+                      </span>
                     )}
                   </div>
 
                   {/* Meta row */}
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 5,
-                    fontSize: 10,
-                    opacity: 0.85,
-                  }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      fontSize: 10,
+                      opacity: 0.85,
+                    }}
+                  >
                     <span
                       style={{
                         padding: "0 4px",
@@ -538,14 +629,16 @@ export default function Blog() {
         </div>
 
         {/* Status bar */}
-        <div style={{
-          padding: "2px 8px",
-          borderTop: "1px solid #808080",
-          fontSize: 10,
-          color: "#444",
-          background: "#c0c0c0",
-          boxShadow: "inset 0 1px 0 #fff",
-        }}>
+        <div
+          style={{
+            padding: "2px 8px",
+            borderTop: "1px solid #808080",
+            fontSize: 10,
+            color: "#444",
+            background: "#c0c0c0",
+            boxShadow: "inset 0 1px 0 #fff",
+          }}
+        >
           {filteredPosts.length} post{filteredPosts.length !== 1 ? "s" : ""}
         </div>
       </div>
@@ -554,56 +647,76 @@ export default function Blog() {
       <div style={{ overflowY: "auto", background: "#fff" }}>
         {selectedPost ? (
           <div style={{ padding: "14px 18px" }}>
-
             {/* Header */}
             <div style={{ marginBottom: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                <span style={{
-                  fontSize: 10,
-                  padding: "1px 6px",
-                  background: CATEGORY_COLORS[selectedPost.category] ?? "#000080",
-                  color: "#fff",
-                  letterSpacing: "0.06em",
-                }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  marginBottom: 6,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 10,
+                    padding: "1px 6px",
+                    background:
+                      CATEGORY_COLORS[selectedPost.category] ?? "#000080",
+                    color: "#fff",
+                    letterSpacing: "0.06em",
+                  }}
+                >
                   {selectedPost.category}
                 </span>
                 <span style={{ fontSize: 10, color: "#777" }}>
-                  {selectedPost.date} · {readingTime(selectedPost.content)} min read
+                  {selectedPost.date} · {readingTime(selectedPost.content)} min
+                  read
                 </span>
                 {isNew(selectedPost.date) && (
-                  <span style={{
-                    fontSize: 9,
-                    padding: "1px 4px",
-                    background: "#cc0000",
-                    color: "#fff",
-                  }}>NEW</span>
+                  <span
+                    style={{
+                      fontSize: 9,
+                      padding: "1px 4px",
+                      background: "#cc0000",
+                      color: "#fff",
+                    }}
+                  >
+                    NEW
+                  </span>
                 )}
               </div>
 
-              <h2 style={{
-                margin: "0 0 8px",
-                fontSize: 17,
-                fontFamily: "Tahoma, Arial, sans-serif",
-                fontWeight: "bold",
-                color: "#000",
-                lineHeight: 1.25,
-              }}>
+              <h2
+                style={{
+                  margin: "0 0 8px",
+                  fontSize: 17,
+                  fontFamily: "Tahoma, Arial, sans-serif",
+                  fontWeight: "bold",
+                  color: "#000",
+                  lineHeight: 1.25,
+                }}
+              >
                 {selectedPost.title}
               </h2>
 
-              <p style={{
-                margin: 0,
-                fontStyle: "italic",
-                color: "#555",
-                fontSize: 12,
-                lineHeight: 1.5,
-              }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontStyle: "italic",
+                  color: "#555",
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                }}
+              >
                 {selectedPost.excerpt}
               </p>
             </div>
 
             {/* Win95 double-rule separator */}
-            <div style={{ height: 1, background: "#808080", margin: "0 0 1px" }} />
+            <div
+              style={{ height: 1, background: "#808080", margin: "0 0 1px" }}
+            />
             <div style={{ height: 1, background: "#fff", marginBottom: 14 }} />
 
             {/* Body */}
@@ -612,16 +725,17 @@ export default function Blog() {
             </article>
 
             {/* Footer */}
-            <div style={{
-              marginTop: 20,
-              paddingTop: 8,
-              borderTop: "1px solid #c0c0c0",
-              fontSize: 10,
-              color: "#888",
-            }}>
+            <div
+              style={{
+                marginTop: 20,
+                paddingTop: 8,
+                borderTop: "1px solid #c0c0c0",
+                fontSize: 10,
+                color: "#888",
+              }}
+            >
               taahirah.exe · {selectedPost.date}
             </div>
-
           </div>
         ) : (
           <div style={{ padding: 20, color: "#777", fontSize: 12 }}>
