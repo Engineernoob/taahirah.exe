@@ -23,6 +23,122 @@ type ContentBlock =
 // ── Posts ─────────────────────────────────────────────────────────────────────
 const POSTS: BlogPost[] = [
   {
+    id: "week-of-events-and-conventions",
+    title: "A Week of Events, Conventions, and Career Signals",
+    date: "June 23, 2026",
+    category: "Career",
+    excerpt:
+      "This past week was packed with events, convention floors, hallway conversations, and a lot of reminders that showing up in public is part of building a tech career.",
+    content: [
+      {
+        type: "p",
+        text: "This past week reminded me that career growth does not only happen in GitHub commits or job applications. Sometimes it happens in rooms full of people, vendor booths, panel talks, awkward introductions, and five-minute conversations that make you rethink your whole strategy.",
+      },
+      {
+        type: "p",
+        text: "I went into the week mostly thinking about networking as this formal thing: polished elevator pitch, perfect LinkedIn message, clean resume, correct answers. But being around events and conventions made it feel more human. People were talking about what they were building, what they were stuck on, what tools they were experimenting with, and what they wished existed.",
+      },
+      { type: "h3", text: "The Pattern I Kept Seeing" },
+      {
+        type: "p",
+        text: "The biggest pattern was simple: the people who stood out were not always the loudest or most credentialed. They were the clearest. They could explain what they cared about, what they had built, and what kind of problems they wanted to solve without sounding like a resume generator trapped in a blazer.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Specific projects beat vague ambition",
+          "Clear taste beats trying to sound like everyone else",
+          "Asking good questions is a networking skill",
+          "Following up matters more than collecting contacts",
+        ],
+      },
+      { type: "h3", text: "What I Took From It" },
+      {
+        type: "p",
+        text: "I left the week with a stronger sense that my portfolio should not just say I am interested in AI, dev tools, and creative software. It should prove it quickly. Every project needs to make the case before anyone scrolls away.",
+      },
+      {
+        type: "p",
+        text: "That means sharper demos, better writing, cleaner case studies, and more honest notes about what I learned while building. The convention floor was basically a reminder that attention is expensive. If someone gives you thirty seconds, do not waste it being generic.",
+      },
+    ],
+  },
+  {
+    id: "networking-after-the-convention-floor",
+    title: "Networking After the Convention Floor",
+    date: "June 21, 2026",
+    category: "Career",
+    excerpt:
+      "The real networking started after the panels ended: follow-ups, notes, project links, and learning how to turn quick conversations into actual momentum.",
+    content: [
+      {
+        type: "p",
+        text: "The convention floor is loud. Everyone is moving, everyone has somewhere to be, and every conversation feels like it has a built-in countdown timer. At first that made networking feel impossible. Then I realized the goal was not to say everything in one conversation. The goal was to create a reason to continue the conversation later.",
+      },
+      {
+        type: "p",
+        text: "That changed how I approached people. Instead of trying to pitch my entire background, I focused on one clear thread: I am building software at the intersection of AI, developer tools, and weird creative interfaces. That is specific enough to be memorable and broad enough to invite questions.",
+      },
+      { type: "h3", text: "My Follow-Up System" },
+      {
+        type: "ul",
+        items: [
+          "Write down the person's name and context immediately",
+          "Add one specific detail from the conversation",
+          "Send a short follow-up within 24 to 48 hours",
+          "Link one relevant project instead of dumping every project I have ever made",
+          "Ask a real question, not a fake networking question",
+        ],
+      },
+      {
+        type: "p",
+        text: "The biggest lesson was that follow-up messages should not feel like homework for the other person. Nobody wants a wall of text from someone they met for three minutes. A good follow-up is short, specific, and easy to respond to.",
+      },
+      { type: "h3", text: "What I Am Changing" },
+      {
+        type: "p",
+        text: "I am going to make my portfolio easier to share in networking moments. That means cleaner project summaries, faster-loading demos, and blog posts like this that show how I think in public. The goal is not to look perfect. The goal is to be legible.",
+      },
+    ],
+  },
+  {
+    id: "why-in-person-tech-events-still-matter",
+    title: "Why In-Person Tech Events Still Matter",
+    date: "June 18, 2026",
+    category: "Thoughts",
+    excerpt:
+      "Remote work is real, online portfolios matter, and cold outreach works — but being in the room still changes the game.",
+    content: [
+      {
+        type: "p",
+        text: "I spend a lot of time online: building projects, applying to roles, sending messages, reading docs, debugging things that should absolutely not be broken. So it is easy to start believing that a tech career can be built entirely through screens.",
+      },
+      {
+        type: "p",
+        text: "This past week pushed back on that. In-person events still matter because they compress trust. A person can see how you talk about your work, how curious you are, how you respond to ideas, and whether there is an actual human behind the portfolio link.",
+      },
+      { type: "h3", text: "What Online Does Not Capture" },
+      {
+        type: "p",
+        text: "Online, everything gets flattened. A project becomes a card. A resume becomes keywords. A person becomes a profile photo and a headline. In person, there is more signal. You can explain why you built something, what broke, what you would do differently, and what problem you are chasing next.",
+      },
+      {
+        type: "ul",
+        items: [
+          "You learn what people actually care about right now",
+          "You hear the language companies use to describe their problems",
+          "You get feedback faster than waiting on an application portal",
+          "You become easier to remember because you are not just another inbox item",
+        ],
+      },
+      { type: "h3", text: "The Bigger Takeaway" },
+      {
+        type: "p",
+        text: "I still believe proof of work is the strongest signal. But proof of work travels further when people have a reason to care. Events and conventions create those little openings. The work still has to be good. The difference is that now someone might actually click it.",
+      },
+    ],
+  },
+  {
     id: "flipping-burgers-and-writing-code",
     title: "Flipping Burgers and Writing Code",
     date: "June 13, 2026",

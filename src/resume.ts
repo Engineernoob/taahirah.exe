@@ -1,5 +1,8 @@
+/**
+ * URL of the resume PDF file.
+ */
 export const RESUME_URL = new URL(
-  "../Taahirah_Denmark_Resume_2026_3.pdf",
+  "../Taahirah_Denmark_FullStack_Product.pdf",
   import.meta.url,
 ).href;
 
