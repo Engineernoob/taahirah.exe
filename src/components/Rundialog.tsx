@@ -10,23 +10,30 @@ const COMMANDS: Record<
   string,
   { target?: string; action?: string; desc: string }
 > = {
-  projects: { target: "projects", desc: "Open Projects window" },
-  about: { target: "about", desc: "Open About window" },
-  blog: { target: "blog", desc: "Open Blog window" },
-  resume: { target: "resume", desc: "Open Resume" },
-  contact: { target: "contact", desc: "Open Contact window" },
+  ailab: { target: "projects", desc: "Open AI Lab" },
+  "ai-lab": { target: "projects", desc: "Open AI Lab" },
+  projects: { target: "projects", desc: "Open AI Lab / Projects" },
+  about: { target: "about", desc: "Open About Me" },
+  blog: { target: "internet-explorer", desc: "Open Blog in Internet Explorer" },
+  ie: { target: "internet-explorer", desc: "Open Internet Explorer" },
+  resume: { target: "experience", desc: "Open Resume.log" },
+  experience: { target: "experience", desc: "Open Resume.log" },
+  contact: { target: "contact", desc: "Open Contact Terminal" },
   netflix: { target: "netflix", desc: "Open Netflix 95" },
   msn: { target: "msn", desc: "Open MSN Messenger" },
   notepad: { target: "notepad", desc: "Open Notepad" },
-  settings: { target: "settings", desc: "Open Settings" },
-  welcome: { target: "welcome", desc: "Open Welcome screen" },
-  explorer: { target: "showcase", desc: "Open My Computer" },
+  settings: { target: "settings", desc: "Open Display Properties" },
+  welcome: { target: "showcase", desc: "Open Taahirah.exe" },
+  taahirah: { target: "showcase", desc: "Open Taahirah.exe" },
+  explorer: { target: "showcase", desc: "Open Taahirah.exe" },
   help: { action: "help", desc: "Show available commands" },
   cls: { action: "clear", desc: "Clear history" },
   clear: { action: "clear", desc: "Clear history" },
 };
 
 const HISTORY_KEY = "run-dialog-history";
+
+const SUGGESTED_COMMANDS = ["ailab", "resume", "blog", "about", "contact"];
 
 export default function RunDialog({ onOpen, onClose }: RunDialogProps) {
   const [input, setInput] = useState("");
@@ -48,6 +55,7 @@ export default function RunDialog({ onOpen, onClose }: RunDialogProps) {
 
   const run = () => {
     const cmd = input.trim().toLowerCase();
+    const normalizedCmd = cmd.replace(/\s+/g, "-");
     if (!cmd) return;
 
     // Save to history
@@ -56,11 +64,11 @@ export default function RunDialog({ onOpen, onClose }: RunDialogProps) {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(newHist));
     setHistIdx(-1);
 
-    const entry = COMMANDS[cmd];
+    const entry = COMMANDS[cmd] ?? COMMANDS[normalizedCmd];
 
     if (!entry) {
       setError(
-        `'${cmd}' is not recognized as an internal or external command.`,
+        `'${cmd}' is not recognized. Type 'help' or try: ${SUGGESTED_COMMANDS.join(", ")}.`,
       );
       setShowHelp(false);
       return;
@@ -128,8 +136,40 @@ export default function RunDialog({ onOpen, onClose }: RunDialogProps) {
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ fontSize: 32, lineHeight: 1 }}>🖥</div>
         <div style={{ fontSize: 11, color: "#222", lineHeight: 1.6 }}>
-          Type the name of a program, folder, or window to open it.
+          Type a command to open a TaahirahOS window. Try <strong>ailab</strong>
+          , <strong>resume</strong>, <strong>blog</strong>, or{" "}
+          <strong>help</strong>.
         </div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 6,
+          marginLeft: 44,
+        }}
+      >
+        {SUGGESTED_COMMANDS.map((cmd) => (
+          <button
+            key={cmd}
+            type="button"
+            className="btn"
+            style={{
+              fontFamily: "Tahoma, Arial, sans-serif",
+              fontSize: 10,
+              padding: "1px 6px",
+            }}
+            onClick={() => {
+              setInput(cmd);
+              setError("");
+              setShowHelp(false);
+              inputRef.current?.focus();
+            }}
+          >
+            {cmd}
+          </button>
+        ))}
       </div>
 
       {/* Win95 sunken divider */}
@@ -146,6 +186,8 @@ export default function RunDialog({ onOpen, onClose }: RunDialogProps) {
             flex: 1,
             fontFamily: "Courier New, monospace",
             fontSize: 12,
+            color: "#00ff66",
+            background: "#050505",
           }}
           value={input}
           onChange={(e) => {
@@ -249,10 +291,26 @@ export default function RunDialog({ onOpen, onClose }: RunDialogProps) {
           onClick={() => {
             setShowHelp(true);
             setError("");
+            setInput("help");
           }}
         >
           Help
         </button>
+      </div>
+      <div
+        style={{
+          margin: "0 -12px -12px",
+          padding: "3px 8px",
+          background: "var(--color-gray-200)",
+          borderTop: "1px solid var(--color-gray-300)",
+          fontSize: 10,
+          color: "#555",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <span>Run.exe ready</span>
+        <span>{history.length} command(s) saved</span>
       </div>
     </div>
   );

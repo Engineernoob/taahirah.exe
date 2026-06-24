@@ -33,7 +33,13 @@ function makeNightSkyTexture() {
     const b = 0.3 + Math.random() * 0.7;
     ctx.fillStyle = `rgba(255,255,255,${b})`;
     ctx.beginPath();
-    ctx.arc(Math.random() * 512, Math.random() * 384, Math.random() * 2.5, 0, Math.PI * 2);
+    ctx.arc(
+      Math.random() * 512,
+      Math.random() * 384,
+      Math.random() * 2.5,
+      0,
+      Math.PI * 2,
+    );
     ctx.fill();
   }
   ctx.fillStyle = "#fffbe8";
@@ -1059,13 +1065,24 @@ function makeClockUpdater() {
       const isMajor = h % 3 === 0;
       const r1 = isMajor ? 96 : 105;
       ctx.beginPath();
-      ctx.arc(128 + Math.cos(a) * r1, 128 + Math.sin(a) * r1, isMajor ? 6 : 3, 0, Math.PI * 2);
+      ctx.arc(
+        128 + Math.cos(a) * r1,
+        128 + Math.sin(a) * r1,
+        isMajor ? 6 : 3,
+        0,
+        Math.PI * 2,
+      );
       ctx.fill();
     }
     ctx.font = "bold 20px serif";
     ctx.fillStyle = "#1a1a1a";
     ctx.textAlign = "center";
-    [[12, 128, 22], [3, 234, 134], [6, 128, 242], [9, 24, 134]].forEach(([n, x, y]) => ctx.fillText(String(n), x as number, y as number));
+    [
+      [12, 128, 22],
+      [3, 234, 134],
+      [6, 128, 242],
+      [9, 24, 134],
+    ].forEach(([n, x, y]) => ctx.fillText(String(n), x as number, y as number));
     ctx.textAlign = "left";
     ctx.fillStyle = "#cc2222";
     ctx.beginPath();
@@ -1077,7 +1094,12 @@ function makeClockUpdater() {
     ctx.fill();
   }
 
-  function drawHand(angleDeg: number, length: number, width: number, color: string) {
+  function drawHand(
+    angleDeg: number,
+    length: number,
+    width: number,
+    color: string,
+  ) {
     const a = ((angleDeg - 90) * Math.PI) / 180;
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
@@ -1249,8 +1271,20 @@ function buildScene(): SceneObjects {
   const WY = 6.2;
   add(box(WW + 0.12, 0.06, 0.1), windowFrameMat, WX, WY + WH / 2 + 0.02, -3.93);
   add(box(WW + 0.12, 0.06, 0.1), windowFrameMat, WX, WY - 0.02, -3.93);
-  add(box(0.06, WH + 0.1, 0.1), windowFrameMat, WX - WW / 2 - 0.03, WY + WH / 2, -3.93);
-  add(box(0.06, WH + 0.1, 0.1), windowFrameMat, WX + WW / 2 + 0.03, WY + WH / 2, -3.93);
+  add(
+    box(0.06, WH + 0.1, 0.1),
+    windowFrameMat,
+    WX - WW / 2 - 0.03,
+    WY + WH / 2,
+    -3.93,
+  );
+  add(
+    box(0.06, WH + 0.1, 0.1),
+    windowFrameMat,
+    WX + WW / 2 + 0.03,
+    WY + WH / 2,
+    -3.93,
+  );
   add(box(WW, WH, 0.04), windowGlassMat, WX, WY + WH / 2, -3.92);
   add(box(0.04, WH, 0.06), windowFrameMat, WX, WY + WH / 2, -3.92);
   add(box(WW, 0.04, 0.06), windowFrameMat, WX, WY + WH / 2, -3.92);
@@ -1366,14 +1400,15 @@ function buildScene(): SceneObjects {
   lCtx.font = "bold 9px 'Courier New'";
   lCtx.fillText("LandingScene.tsx", 86, 14);
   const codeLines = [
-    { col: "#ff7b72", t: "function buildScene() {" },
-    { col: "#8b949e", t: "  // dark walnut desk" },
-    { col: "#79c0ff", t: "  const walnut = mat('#3d2210');" },
-    { col: "#e3b341", t: "  const monitors = dualSetup();" },
-    { col: "#79c0ff", t: "  const chair = highBack();" },
-    { col: "#f8f8f2", t: "  addPosters(scene);" },
-    { col: "#8b949e", t: "  // eggshell walls ✓" },
-    { col: "#f8f8f2", t: "}" },
+    { col: "#58a6ff", t: "$ recuris run" },
+    { col: "#8b949e", t: "" },
+    { col: "#3fb950", t: "Ivy     ✓ online" },
+    { col: "#3fb950", t: "Nova    ✓ online" },
+    { col: "#3fb950", t: "Echo    ✓ online" },
+    { col: "#3fb950", t: "Orion   ✓ online" },
+    { col: "#e3b341", t: "Building DARiAN..." },
+    { col: "#79c0ff", t: "WarmGraph score updated" },
+    { col: "#f8f8f2", t: "Task completed." },
   ];
   codeLines.forEach((l, i) => {
     lCtx.fillStyle = l.col;
@@ -1811,16 +1846,22 @@ function buildScene(): SceneObjects {
       x: -0.28,
       y: 0.14,
       rz: -0.08,
-      text: ["fix auth bug", "!!"],
+      text: ["Train LLM", "DARiAN"],
     },
     {
       color: "#a8e6a3",
       x: 0.28,
       y: 0.1,
       rz: 0.06,
-      text: ["deploy fri", "✓ tests"],
+      text: ["Move", "Chicago"],
     },
-    { color: "#ffb3ba", x: -0.26, y: -0.12, rz: 0.1, text: ["call mom", "🙂"] },
+    {
+      color: "#ffb3ba",
+      x: -0.26,
+      y: -0.12,
+      rz: 0.1,
+      text: ["Build", "Recuris"],
+    },
   ];
   stickyData.forEach(({ color, x, y, rz, text }) => {
     const sc = document.createElement("canvas");
@@ -2479,35 +2520,35 @@ function buildScene(): SceneObjects {
       y: cbY + 0.18,
       color: "#ffe066",
       rz: -0.07,
-      lines: ["Sprint Goals", "✓ landing pg", "→ projects"],
+      lines: ["2026 Goals", "AI Engineer", "Launch SaaS"],
     },
     {
       x: cbX + 0.05,
       y: cbY + 0.2,
       color: "#b8f0b8",
       rz: 0.05,
-      lines: ["TODO", "résumé pdf", "dark mode"],
+      lines: ["Projects", "DARiAN", "Recuris"],
     },
     {
       x: cbX + 0.38,
       y: cbY + 0.15,
       color: "#ffc8c8",
       rz: -0.04,
-      lines: ["inspo:", "awwwards.com", "lottiefiles"],
+      lines: ["Chicago", "Downtown", "2027 Move"],
     },
     {
       x: cbX - 0.28,
       y: cbY - 0.18,
       color: "#c8e8ff",
       rz: 0.09,
-      lines: ["remember:", "ship it!", "done > perfect"],
+      lines: ["Reminder", "Build Daily", "Ship Weekly"],
     },
     {
       x: cbX + 0.22,
       y: cbY - 0.15,
       color: "#ffe066",
       rz: -0.06,
-      lines: ["reading:", "48 Laws ✓", "Clean Code →"],
+      lines: ["Reading", "Art of War", "48 Laws"],
     },
   ];
   corkNotes.forEach(({ x, y, color, rz, lines }) => {
@@ -2678,7 +2719,13 @@ function buildScene(): SceneObjects {
     0,
   );
 
-  return { scene, screenGlow, screenGlow2, updateScreen, updateAmbient: updateClock };
+  return {
+    scene,
+    screenGlow,
+    screenGlow2,
+    updateScreen,
+    updateAmbient: updateClock,
+  };
 }
 
 // ─── Camera rig ────────────────────────────────────────────────────────────────
@@ -2796,7 +2843,8 @@ export default function LandingScene({
       60,
     );
 
-    const { scene, screenGlow, screenGlow2, updateScreen, updateAmbient } = buildScene();
+    const { scene, screenGlow, screenGlow2, updateScreen, updateAmbient } =
+      buildScene();
 
     // ── Environment map for reflections ──────────────────────────────────────
     const pmrem = new THREE.PMREMGenerator(renderer);
@@ -2869,9 +2917,16 @@ export default function LandingScene({
       }
       const zoomBase = easeInOutQuint(zoomProgress);
       // Apply overshoot bounce (peaks at +0.03, decays to 0)
-      const overshoot = bounceDecay > 0 ? Math.sin(bounceDecay * Math.PI * 10) * bounceDecay * 0.06 : 0;
+      const overshoot =
+        bounceDecay > 0
+          ? Math.sin(bounceDecay * Math.PI * 10) * bounceDecay * 0.06
+          : 0;
       const zoomT = Math.max(0, Math.min(1.04, zoomBase + overshoot));
-      if (phaseRef.current === "zoomingIn" && zoomProgress >= 1 && bounceDecay === 0) {
+      if (
+        phaseRef.current === "zoomingIn" &&
+        zoomProgress >= 1 &&
+        bounceDecay === 0
+      ) {
         bounceDecay = 1;
       }
 
@@ -2881,8 +2936,7 @@ export default function LandingScene({
         Math.sin(t * 0.023 + 0.5) * 0.035 +
         Math.sin(t * 0.11 + 0.7) * 0.02;
       const idleElOscil =
-        Math.sin(t * 0.05 + 1.2) * 0.018 +
-        Math.sin(t * 0.08 + 0.3) * 0.008;
+        Math.sin(t * 0.05 + 1.2) * 0.018 + Math.sin(t * 0.08 + 0.3) * 0.008;
       const parallaxWeight = Math.max(0, 1 - zoomT * 2);
       const mouseAz = mouseRef.current.x * 0.08 * parallaxWeight;
       const mouseEl = mouseRef.current.y * 0.035 * parallaxWeight;
@@ -2918,7 +2972,8 @@ export default function LandingScene({
 
       // During pullback (shutdown mode zooming out), show idle screen
       // instead of running the BIOS scroll in reverse.
-      const screenProgress = phaseRef.current === "pullingBack" ? 0 : zoomProgress;
+      const screenProgress =
+        phaseRef.current === "pullingBack" ? 0 : zoomProgress;
       updateScreen(t, screenProgress);
 
       // CRT glow: warm pulse + random micro-flicker for cathode ray feel
@@ -2926,14 +2981,25 @@ export default function LandingScene({
       const flicker = 1 + (Math.random() - 0.5) * 0.04;
       const baseIntensity = lerp(SCREEN_GLOW_IDLE, SCREEN_GLOW_CLOSE, zoomT);
       screenGlow.intensity = baseIntensity * pulse * flicker;
-      screenGlow2.intensity = baseIntensity * 0.15 * (0.8 + Math.sin(t * 3.7 + 1.3) * 0.2);
+      screenGlow2.intensity =
+        baseIntensity * 0.15 * (0.8 + Math.sin(t * 3.7 + 1.3) * 0.2);
 
       // Monitor power LEDs: gentle breathing
       const ledBrightness = 0.5 + Math.sin(t * 1.6) * 0.3 + 0.2;
       const lLed = scene.userData.lLed as THREE.Mesh | undefined;
       const rLed = scene.userData.rLed as THREE.Mesh | undefined;
-      if (lLed) (lLed.material as THREE.MeshBasicMaterial).color.setHSL(0.4, 1, 0.3 * ledBrightness);
-      if (rLed) (rLed.material as THREE.MeshBasicMaterial).color.setHSL(0.4, 1, 0.3 * ledBrightness);
+      if (lLed)
+        (lLed.material as THREE.MeshBasicMaterial).color.setHSL(
+          0.4,
+          1,
+          0.3 * ledBrightness,
+        );
+      if (rLed)
+        (rLed.material as THREE.MeshBasicMaterial).color.setHSL(
+          0.4,
+          1,
+          0.3 * ledBrightness,
+        );
 
       updateAmbient(t);
       composer.render();

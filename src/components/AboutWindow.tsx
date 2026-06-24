@@ -2,9 +2,9 @@
 
 const QUICK_FACTS = [
   { label: "Name", value: "Taahirah Denmark" },
-  { label: "Role", value: "Software Engineer" },
+  { label: "Role", value: "AI Engineer & Developer Tools Builder" },
   { label: "Based", value: "O'Fallon, IL  ·  Open to Remote" },
-  { label: "Focus", value: "Full-Stack Web & Developer Tools" },
+  { label: "Focus", value: "AI Systems, Developer Tools & Local-First Software" },
   { label: "Status", value: "Open to opportunities" },
 ];
 
@@ -15,6 +15,29 @@ const EDUCATION = [
     period: "2023 – 2027",
     status: "Junior  ·  In Progress",
     notes: "Romeoville, IL",
+  },
+];
+
+const TIMELINE = [
+  {
+    year: "2023",
+    title: "Started Taking Software Engineering Seriously",
+    detail: "Focused on programming, web development, and shipping projects.",
+  },
+  {
+    year: "2025",
+    title: "Software Engineering Intern",
+    detail: "Worked on real product features while growing as an engineer.",
+  },
+  {
+    year: "2025",
+    title: "Lewis University",
+    detail: "Continued Computer Science studies and accelerated degree path.",
+  },
+  {
+    year: "2026",
+    title: "Building AI Products",
+    detail: "PatchPilot, Recuris, DARiAN, RetroOS Portfolio, and other AI projects.",
   },
 ];
 
@@ -45,7 +68,7 @@ const INTERESTS = [
   {
     icon: "🎮",
     label: "Gaming",
-    detail: "Story-driven RPGs and competitive shooters",
+    detail: "Soulslikes, RPGs, strategy games, and Minecraft modding",
   },
   { icon: "🍳", label: "Cooking", detail: "Experimenting with new recipes" },
   {
@@ -202,10 +225,10 @@ export default function AboutWindow() {
             Taahirah Denmark
           </div>
           <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>
-            Software Engineer · Lewis University '27
+            AI Engineer · Lewis University CS '27
           </div>
           <div style={{ marginTop: 4, display: "flex", gap: 4 }}>
-            {["Full-Stack", "Dev Tools", "AI"].map((tag) => (
+            {["AI", "Developer Tools", "Systems"].map((tag) => (
               <span
                 key={tag}
                 style={{
@@ -257,23 +280,64 @@ export default function AboutWindow() {
           </table>
         </div>
 
+        <div style={{ padding: "0 16px 12px" }}>
+          <SectionHeader>Current Mission</SectionHeader>
+          <div
+            style={{
+              background: "linear-gradient(90deg, #eef4ff, #ffffff)",
+              border: "1px solid #b8c7e6",
+              padding: "10px 12px",
+              lineHeight: 1.7,
+            }}
+          >
+            Building AI developer tools, autonomous software systems, and local-first applications that make software engineering faster, clearer, and more accessible.
+          </div>
+        </div>
+
         <Divider />
 
         {/* Bio */}
         <div style={{ padding: "0 16px" }}>
           <SectionHeader>About Me</SectionHeader>
           <p style={{ margin: "0 0 10px", lineHeight: 1.7, color: "#222" }}>
-            Hey, I'm Taahirah — a Junior CS student at Lewis University and a
-            software engineer who builds full-stack apps, developer tools, and
-            AI-powered platforms. I'm drawn to projects that feel ambitious or
-            slightly unreasonable, which is how I ended up building a Windows 95
-            portfolio with a live 3D room inside it.
+            Hey, I'm Taahirah. I'm a Computer Science student, builder, and aspiring AI engineer who loves creating software that feels ambitious, useful, and a little unconventional. My favorite projects sit at the intersection of AI, developer tooling, automation, and creative interfaces.
           </p>
           <p style={{ margin: "0 0 10px", lineHeight: 1.7, color: "#222" }}>
-            I care about the craft — clean code, intentional UX, and shipping
-            things that actually work. When I'm not in the editor I'm at the
-            gym, watching anime, or cooking something new.
+            Recently I've been focused on projects like PatchPilot, Recuris, DARiAN, and this RetroOS portfolio. I enjoy turning rough ideas into working products, learning in public, and experimenting with new ways humans interact with software.
           </p>
+
+          <SectionHeader>Journey Timeline</SectionHeader>
+          {TIMELINE.map((item) => (
+            <div
+              key={`${item.year}-${item.title}`}
+              style={{
+                display: "flex",
+                gap: 12,
+                marginBottom: 8,
+                padding: "6px 8px",
+                background: "#f8f8f8",
+                border: "1px solid #e0e0e0",
+              }}
+            >
+              <div
+                style={{
+                  minWidth: 50,
+                  fontWeight: "bold",
+                  color: "#000080",
+                }}
+              >
+                {item.year}
+              </div>
+              <div>
+                <div style={{ fontWeight: "bold", fontSize: 11 }}>
+                  {item.title}
+                </div>
+                <div style={{ fontSize: 10, color: "#666" }}>
+                  {item.detail}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         <Divider />
@@ -325,6 +389,36 @@ export default function AboutWindow() {
               </div>
             </div>
           ))}
+
+          <SectionHeader>Currently Building</SectionHeader>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              gap: 8,
+              marginBottom: 10,
+            }}
+          >
+            {[
+              "PatchPilot",
+              "Recuris",
+              "DARiAN",
+              "RetroOS Portfolio",
+            ].map((project) => (
+              <div
+                key={project}
+                style={{
+                  padding: "8px",
+                  background: "#f4f4f4",
+                  border: "1px solid #c0c0c0",
+                }}
+              >
+                <div style={{ fontWeight: "bold", color: "#000080" }}>
+                  {project}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <Divider />
@@ -414,7 +508,7 @@ export default function AboutWindow() {
           justifyContent: "space-between",
         }}
       >
-        <span>taahirah.exe · About</span>
+        <span>taahirah.exe · About Me · Mission Loaded</span>
         <span>Lewis University · CS · Class of 2027</span>
       </div>
     </div>

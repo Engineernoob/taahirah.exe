@@ -1,21 +1,44 @@
 import { useState, useRef } from "react";
 
-const DEFAULT_TEXT = `Welcome to Notepad
+const DEFAULT_TEXT = `TaahirahOS Notepad
 ==================
 
-This is a simple text editor built into taahirah.exe.
+Welcome to the built-in writing workspace.
 
-You can type anything here. Notes are saved automatically
-to your browser's local storage.
+Ideas:
+- Draft blog posts
+- Capture project ideas
+- Prepare networking messages
+- Store interview notes
+- Plan AI experiments
 
-Tips:
-- Ctrl+A to select all
-- Ctrl+S to save (auto-saves anyway)
-- Ctrl+Z to undo
+Quick Commands:
+/blog      Draft a new blog post
+/project   Sketch a project idea
+/network   Draft an outreach message
 
+Notes are automatically saved locally.
 `;
 
 const STORAGE_KEY = "win95-notepad-content";
+
+const QUICK_TEMPLATES = [
+  {
+    label: "Blog",
+    content:
+      "# Blog Post\n\n## What happened\n\n## What I learned\n\n## What's next\n",
+  },
+  {
+    label: "Project",
+    content:
+      "# Project Idea\n\nProblem:\n\nSolution:\n\nTech Stack:\n\nNext Steps:\n",
+  },
+  {
+    label: "Networking",
+    content:
+      "Hi [Name],\n\nI came across your work and wanted to reach out because...\n",
+  },
+];
 
 function wordCount(text: string) {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
@@ -30,11 +53,13 @@ export default function NotepadWindow() {
   );
   const [saved, setSaved] = useState(true);
   const [wrap, setWrap] = useState(true);
+  const [lastSaved, setLastSaved] = useState<string>("Never");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const save = (text: string) => {
     localStorage.setItem(STORAGE_KEY, text);
     setSaved(true);
+    setLastSaved(new Date().toLocaleTimeString());
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -67,6 +92,12 @@ export default function NotepadWindow() {
   const clear = () => {
     setContent("");
     save("");
+  };
+
+  const insertTemplate = (template: string) => {
+    setContent(template);
+    setSaved(false);
+    textareaRef.current?.focus();
   };
 
   const stats = wordCount(content);
@@ -117,6 +148,13 @@ export default function NotepadWindow() {
               },
               { label: "Word Wrap", onClick: () => setWrap((w) => !w) },
             ],
+          },
+          {
+            label: "Templates",
+            items: QUICK_TEMPLATES.map((template) => ({
+              label: template.label,
+              onClick: () => insertTemplate(template.content),
+            })),
           },
         ].map((menu) => (
           <div
@@ -199,6 +237,35 @@ export default function NotepadWindow() {
         ))}
       </div>
 
+      {/* ── Toolbar ───────────────────────────────────────────────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          padding: "4px 8px",
+          background: "#d8d8d8",
+          borderBottom: "1px solid #808080",
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {QUICK_TEMPLATES.map((template) => (
+            <button
+              key={template.label}
+              className="btn"
+              style={{ fontSize: 10, fontFamily: "Tahoma" }}
+              onClick={() => insertTemplate(template.content)}
+            >
+              {template.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ fontSize: 10, color: "#555" }}>Local Workspace</div>
+      </div>
+
       {/* ── Textarea ────────────────────────────────────────────────────────── */}
       <textarea
         ref={textareaRef}
@@ -215,7 +282,7 @@ export default function NotepadWindow() {
           fontFamily: "'Courier New', Courier, monospace",
           fontSize: 13,
           lineHeight: 1.6,
-          background: "#fff",
+          background: "#fffdf7",
           color: "#000",
           whiteSpace: wrap ? "pre-wrap" : "pre",
           overflowWrap: wrap ? "break-word" : "normal",
@@ -258,8 +325,15 @@ export default function NotepadWindow() {
         <span>
           {stats.words} words · {stats.lines} lines · {stats.chars} chars
         </span>
-        <span style={{ color: saved ? "#007700" : "#cc0000" }}>
-          {saved ? "✓ Saved" : "● Unsaved"}
+        <span
+          style={{
+            color: saved ? "#007700" : "#cc0000",
+            display: "flex",
+            gap: 8,
+          }}
+        >
+          <span>{saved ? "✓ Saved" : "● Unsaved"}</span>
+          <span style={{ color: "#555" }}>Last: {lastSaved}</span>
         </span>
       </div>
     </div>

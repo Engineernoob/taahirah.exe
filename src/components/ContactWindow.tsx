@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { openResumePdf } from "../resume";
+import {
+  downloadResumePdf,
+  openResumePdf,
+  RESUME_LAST_UPDATED,
+} from "../resume";
 
-const OWNER_EMAIL = "taahirah_d@icloud.com";
+const OWNER_EMAIL = "taahirah.engineer@proton.me";
 
 const LINKS = [
   {
@@ -15,10 +19,17 @@ const LINKS = [
     display: "linkedin.com/in/taahirah-denmark-4b1441196",
   },
   {
-    label: "Twitter",
+    label: "X",
     href: "https://twitter.com/shebuildsfire",
     display: "@shebuildsfire",
   },
+];
+
+const CONTACT_STATS = [
+  { label: "Response Goal", value: "24-48 hrs" },
+  { label: "Focus", value: "AI + DevTools" },
+  { label: "Open To", value: "Internships" },
+  { label: "Resume", value: "Current" },
 ];
 
 type FormStatus = "idle" | "sending" | "success" | "error";
@@ -43,7 +54,12 @@ export default function ContactWindow() {
         const res = await fetch(FORM_ENDPOINT, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: name.trim(), email: email.trim(), company: company.trim(), message: message.trim() }),
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim(),
+            company: company.trim(),
+            message: message.trim(),
+          }),
         });
         if (res.ok) {
           setStatus("success");
@@ -105,7 +121,7 @@ export default function ContactWindow() {
         </div>
         <div>
           <div style={{ fontWeight: "bold", fontSize: 13, color: "#000" }}>
-            Get In Touch
+            Contact Terminal
           </div>
           <a
             href={`mailto:${OWNER_EMAIL}`}
@@ -129,6 +145,52 @@ export default function ContactWindow() {
           padding: "12px 16px",
         }}
       >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            gap: 8,
+            marginBottom: 14,
+          }}
+        >
+          {CONTACT_STATS.map((stat) => (
+            <div
+              key={stat.label}
+              style={{
+                padding: "8px",
+                background: "var(--color-gray-100)",
+                border: "1px solid var(--color-gray-300)",
+                boxShadow: "inset 1px 1px 0 #fff",
+              }}
+            >
+              <div style={{ fontSize: 10, color: "#666" }}>{stat.label}</div>
+              <div
+                style={{
+                  marginTop: 3,
+                  fontWeight: "bold",
+                  color: "var(--color-blue)",
+                }}
+              >
+                {stat.value}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div
+          style={{
+            padding: "10px 12px",
+            background: "linear-gradient(90deg, #eef4ff, #ffffff)",
+            border: "1px solid #b8c7e6",
+            marginBottom: 14,
+            lineHeight: 1.6,
+          }}
+        >
+          Interested in AI engineering, developer tools, internships, contract
+          work, or collaboration? Send a message and I'll get back to you as
+          soon as possible.
+        </div>
+
         {/* Message form */}
         <div className="section-header">Send a Message</div>
 
@@ -143,8 +205,21 @@ export default function ContactWindow() {
               marginBottom: 16,
             }}
           >
-            ✅ Thanks for reaching out{FORM_ENDPOINT ? ", I'll get back to you soon" : " — your mail client should have opened"}!{" "}
-            <button className="inline-link" onClick={() => { setStatus("idle"); setName(""); setEmail(""); setCompany(""); setMessage(""); }}>
+            ✅ Thanks for reaching out
+            {FORM_ENDPOINT
+              ? ", I'll get back to you soon"
+              : " — your mail client should have opened"}
+            !{" "}
+            <button
+              className="inline-link"
+              onClick={() => {
+                setStatus("idle");
+                setName("");
+                setEmail("");
+                setCompany("");
+                setMessage("");
+              }}
+            >
               Send another
             </button>
           </div>
@@ -295,7 +370,7 @@ export default function ContactWindow() {
         <div style={{ height: 1, background: "#fff", marginBottom: 12 }} />
 
         {/* Links */}
-        <div className="section-header">Links</div>
+        <div className="section-header">Find Me Online</div>
         <table
           style={{
             width: "100%",
@@ -347,13 +422,42 @@ export default function ContactWindow() {
 
         {/* Resume */}
         <div className="section-header">Resume</div>
-        <button
-          className="btn"
-          style={{ fontFamily: "Tahoma, Arial, sans-serif", fontSize: 12 }}
-          onClick={openResumePdf}
-        >
-          📄 Download Resume
-        </button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            className="btn"
+            style={{ fontFamily: "Tahoma, Arial, sans-serif", fontSize: 12 }}
+            onClick={openResumePdf}
+          >
+            Open Resume
+          </button>
+
+          <button
+            className="btn"
+            style={{ fontFamily: "Tahoma, Arial, sans-serif", fontSize: 12 }}
+            onClick={downloadResumePdf}
+          >
+            Download PDF
+          </button>
+
+          <span style={{ fontSize: 10, color: "#666" }}>
+            Updated {RESUME_LAST_UPDATED}
+          </span>
+        </div>
+      </div>
+      <div
+        style={{
+          padding: "3px 8px",
+          background: "var(--color-gray-200)",
+          borderTop: "1px solid var(--color-gray-300)",
+          fontSize: 10,
+          color: "#555",
+          display: "flex",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <span>Contact terminal ready</span>
+        <span>{OWNER_EMAIL}</span>
       </div>
     </div>
   );

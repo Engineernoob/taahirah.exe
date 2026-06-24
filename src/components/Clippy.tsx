@@ -4,44 +4,51 @@ import { useEffect, useState, useCallback } from "react";
 const TIPS = [
   {
     trigger: "idle",
-    text: "It looks like you're exploring a portfolio! Would you like help finding the Projects window?",
+    text: "Welcome to TaahirahOS. Start with Taahirah.exe if you want the 30-second tour.",
   },
   {
     trigger: "idle",
-    text: "Hi! I'm Clippy. Taahirah built this whole desktop from scratch — pretty cool right? 📎",
+    text: "Recruiter route: Taahirah.exe → AI Lab → Resume.log. Fastest path to the important stuff.",
   },
   {
     trigger: "idle",
-    text: "Did you know you can drag these windows anywhere on the desktop?",
+    text: "PatchPilot is one of the flagship projects. It turns stack traces into ranked root-cause candidates.",
   },
   {
     trigger: "idle",
-    text: "Try double-clicking the icons on the desktop to open new windows!",
+    text: "Recuris explores autonomous software teams with specialized AI agents working together.",
   },
   {
     trigger: "idle",
-    text: "Taahirah is open to new opportunities. Check out the Contact window!",
+    text: "Fun fact: most portfolios are websites. This one pretends to be an operating system.",
   },
   {
     trigger: "idle",
-    text: "Want to see what she's built? Open the Projects window from the taskbar.",
+    text: "Need contact information? Open Contact Terminal from the desktop or Start menu.",
   },
   {
     trigger: "idle",
-    text: "The Netflix 95 window is hiding somewhere on this desktop... 👀",
+    text: "The AI Lab folder is where the strongest project work lives.",
   },
   {
     trigger: "idle",
-    text: "It looks like you're reading a blog post! Would you like me to summarise it? (I can't, but I thought I'd offer.)",
+    text: "Try the Run dialog and type: ailab, resume, blog, or about.",
   },
   {
     trigger: "idle",
-    text: "Fun fact: this room was built with Three.js. Every object on that desk is hand-coded geometry.",
+    text: "This portfolio combines AI, developer tools, retro UI design, and a little bit of chaos.",
   },
   {
     trigger: "idle",
-    text: "You can resize and minimize any window using the buttons in the top-right corner.",
+    text: "If you're a founder or recruiter, Clippy officially recommends opening Resume.log next.",
   },
+];
+
+const QUICK_ACTIONS = [
+  "Open AI Lab",
+  "Open Resume",
+  "Open Contact",
+  "Portfolio Tour",
 ];
 
 // ── Clippy SVG (simplified paperclip shape) ───────────────────────────────────
@@ -126,21 +133,27 @@ export default function Clippy() {
   const [dismissed, setDismissed] = useState(false);
   const [waving, setWaving] = useState(false);
   const [tipIdx, setTipIdx] = useState(0);
+  const [mood, setMood] = useState("Helpful");
 
   const showTip = useCallback((text: string) => {
     setTipText(text);
     setVisible(true);
     setWaving(true);
+    setMood(
+      ["Helpful", "Curious", "Excited", "Recruiting"][
+        Math.floor(Math.random() * 4)
+      ],
+    );
     setTimeout(() => setWaving(false), 600);
   }, []);
 
-  // Show first tip after 6 seconds, then every 30s
+  // Show first tip after 3.5 seconds, then every 30s
   useEffect(() => {
     if (dismissed) return;
     const first = setTimeout(() => {
       showTip(TIPS[0].text);
       setTipIdx(1);
-    }, 6000);
+    }, 3500);
     return () => clearTimeout(first);
   }, [dismissed, showTip]);
 
@@ -174,9 +187,9 @@ export default function Clippy() {
       {visible && (
         <div
           style={{
-            maxWidth: 220,
+            maxWidth: 280,
             padding: "8px 10px",
-            background: "#2e2d2d",
+            background: "#ffffc0",
             border: "2px solid",
             borderColor: "#808080 #fff #fff #808080",
             fontSize: 11,
@@ -186,7 +199,40 @@ export default function Clippy() {
             boxShadow: "2px 2px 0 #808080",
           }}
         >
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: "bold",
+              color: "#000080",
+              marginBottom: 4,
+              textTransform: "uppercase",
+            }}
+          >
+            Clippy • {mood}
+          </div>
           {tipText}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 4,
+              marginTop: 8,
+            }}
+          >
+            {QUICK_ACTIONS.map((action) => (
+              <span
+                key={action}
+                style={{
+                  fontSize: 9,
+                  padding: "1px 4px",
+                  background: "#e8e8e8",
+                  border: "1px solid #b0b0b0",
+                }}
+              >
+                {action}
+              </span>
+            ))}
+          </div>
 
           {/* Bubble tail */}
           <div
@@ -270,9 +316,26 @@ export default function Clippy() {
           transform: waving ? "rotate(-15deg)" : "rotate(0deg)",
           transition: "transform 0.15s ease",
           position: "relative",
+          filter: "drop-shadow(2px 3px 2px rgba(0,0,0,0.25))",
         }}
       >
         <ClippySVG />
+        <div
+          style={{
+            position: "absolute",
+            bottom: -10,
+            left: "50%",
+            transform: "translateX(-50%)",
+            fontSize: 9,
+            color: "#fff",
+            background: "rgba(0,0,0,0.55)",
+            padding: "1px 5px",
+            borderRadius: 3,
+            whiteSpace: "nowrap",
+          }}
+        >
+          Portfolio Assistant
+        </div>
         {/* Dismiss X */}
         <button
           onClick={(e) => {

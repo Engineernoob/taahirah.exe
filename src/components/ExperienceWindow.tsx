@@ -1,38 +1,49 @@
-import { openResumePdf } from "../resume";
+import {
+  downloadResumePdf,
+  openResumePdf,
+  RESUME_LAST_UPDATED,
+} from "../resume";
+
+const SUMMARY_CARDS = [
+  { label: "Primary Track", value: "AI Engineering" },
+  { label: "Strength", value: "Developer Tools" },
+  { label: "Experience", value: "Product + Ops" },
+  { label: "Resume", value: `Updated ${RESUME_LAST_UPDATED}` },
+];
 
 const experiences = [
   {
     company: "Series: AI Native Social Platform",
     role: "Software Engineer Intern",
-    date: "2024-2025",
-    tech: ["Python", "React", "Node.js", "Google Cloud"],
+    date: "2025",
+    tech: ["React", "Firebase", "TypeScript", "Product Engineering"],
     bullets: [
-      "- Architected NLP-driven recommendation features using Node.js and Python, implementing advanced data structures to boost user engagement by 30% for 1,500+ active users.",
-      "- Scaled backend services into a distributed system to accommodate 10,000+ daily API requests while maintaining a sub-200ms average latency.",
-      "- Optimized Firebase database performance by implementing custom indexing and caching strategies, resulting in a 20% reduction in read latency and improved data throughput.",
+      "Built and refined product features for an AI-native social platform, working across frontend UI, data structure, and user profile flows.",
+      "Collaborated on Firebase-backed profile architecture and implementation details for scalable user data handling.",
+      "Contributed research, documentation, and product thinking to support feature planning and team execution.",
     ],
   },
   {
-    company: "Year Up – National Capital Region",
-    role: "IT Trainee",
-    date: "2016 – 2017",
-    tech: ["Windows Server", "Active Directory", "Office 365"],
+    company: "AI + Developer Tools Projects",
+    role: "Independent Builder",
+    date: "2025 – Present",
+    tech: ["Python", "React", "Ollama", "FastAPI", "TypeScript"],
     bullets: [
-      "- Mastered intensive technical training in IT systems, programming fundamentals, and enterprise software workflows, developing hands-on proficiency with AWS, Git, and React.",
-      "- Led a capstone project to design and implement a secure, scalable web application using React and Node.js, demonstrating full-stack development skills and best practices.",
-      "- Collaborated with a team of 5 trainees to troubleshoot and resolve complex IT issues in a simulated enterprise environment, enhancing problem-solving abilities and teamwork skills.",
+      "Built PatchPilot, an AI debugging assistant that turns stack traces and bug reports into ranked root-cause candidates and patch-ready next steps.",
+      "Created Recuris, an experimental autonomous software team with agent roles, task planning, and local-first workflow ideas.",
+      "Developed RetroOS Portfolio, an interactive Windows-inspired portfolio system with draggable windows, project previews, and custom UI interactions.",
+      "Experimented with local LLMs, retrieval, prompt evaluation, and developer-facing AI workflows through multiple hands-on projects.",
     ],
   },
   {
     company: "High-Volume Service Environments (Various Roles)",
     role: "Operations Specialist",
-    date: "2019 – 2020",
+    date: "2019 – Present",
     tech: ["Customer Service", "Team Leadership", "Process Optimization"],
     bullets: [
-      "- Operated in high-throughput environments managing 100+ parallel tasks per shift, prioritizing execution accuracy under strict timing constraints.",
-      "- Improved operational efficiency by standardizing preparation workflows, reducing bottlenecks and improving service throughput.",
-      "- Maintained strict compliance with safety and regulatory standards while operating in fast-paced production environments.",
-      "- Diagnosed and resolved real-time operational issues during peak demand, maintaining service continuity and quality.",
+      "Worked in fast-paced service environments requiring accuracy, prioritization, communication, and calm execution under pressure.",
+      "Managed high-volume workflows where timing, quality, and consistency directly affected customer experience.",
+      "Built strong operational instincts around reliability, process improvement, and real-time problem solving.",
     ],
   },
 ];
@@ -40,7 +51,7 @@ const experiences = [
 const education = {
   school: "Lewis University",
   degree: "B.S. Computer Science",
-  date: "In Progress",
+  date: "Class of 2027",
   note: "Focus on software engineering, systems design, and applied AI development.",
 };
 
@@ -67,20 +78,39 @@ export default function ExperienceWindow() {
           boxShadow: "inset 0 -1px 0 var(--color-gray-300)",
         }}
       >
-        <span style={{ fontWeight: "bold", fontSize: 12, color: "#000" }}>
-          Experience.log
-        </span>
-        <button
-          className="btn"
-          style={{
-            fontSize: 11,
-            fontFamily: "Tahoma, Arial, sans-serif",
-            padding: "1px 10px",
-          }}
-          onClick={openResumePdf}
-        >
-          📄 Download Resume
-        </button>
+        <div>
+          <div style={{ fontWeight: "bold", fontSize: 12, color: "#000" }}>
+            Experience.log
+          </div>
+          <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>
+            Work history, project experience, and education
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 6 }}>
+          <button
+            className="btn"
+            style={{
+              fontSize: 11,
+              fontFamily: "Tahoma, Arial, sans-serif",
+              padding: "1px 10px",
+            }}
+            onClick={openResumePdf}
+          >
+            Open PDF
+          </button>
+          <button
+            className="btn"
+            style={{
+              fontSize: 11,
+              fontFamily: "Tahoma, Arial, sans-serif",
+              padding: "1px 10px",
+            }}
+            onClick={downloadResumePdf}
+          >
+            Download
+          </button>
+        </div>
       </div>
 
       {/* ── Body ──────────────────────────────────────────────── */}
@@ -92,18 +122,76 @@ export default function ExperienceWindow() {
           padding: "12px 16px",
         }}
       >
+        {/* Summary cards */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            gap: 8,
+            marginBottom: 14,
+          }}
+        >
+          {SUMMARY_CARDS.map((card) => (
+            <div
+              key={card.label}
+              style={{
+                background: "var(--color-gray-100)",
+                border: "1px solid var(--color-gray-300)",
+                boxShadow: "inset 1px 1px 0 #fff",
+                padding: "8px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#666",
+                  marginBottom: 4,
+                  textTransform: "uppercase",
+                }}
+              >
+                {card.label}
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: "bold",
+                  color: "var(--color-blue)",
+                }}
+              >
+                {card.value}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Positioning note */}
+        <div
+          style={{
+            padding: "10px 12px",
+            background: "linear-gradient(90deg, #eef4ff, #ffffff)",
+            border: "1px solid #b8c7e6",
+            marginBottom: 14,
+            lineHeight: 1.6,
+          }}
+        >
+          <strong>Career focus:</strong> AI engineering, developer tools, and
+          product-minded software systems. I connect hands-on coding, local AI
+          experimentation, and real-world operational experience into practical
+          tools that solve messy problems.
+        </div>
+
         <div className="section-header">Work Experience</div>
 
         {experiences.map((exp, i) => (
           <div
             key={i}
             style={{
-              marginBottom: 16,
-              paddingBottom: 16,
-              borderBottom:
-                i < experiences.length - 1
-                  ? "1px solid var(--color-gray-100)"
-                  : "none",
+              marginBottom: 12,
+              padding: 12,
+              background:
+                i === 0 ? "linear-gradient(90deg, #f4f8ff, #ffffff)" : "#fff",
+              border: "1px solid var(--color-gray-300)",
+              boxShadow: "var(--shadow-outer-1)",
             }}
           >
             {/* Company + date row */}
@@ -121,17 +209,25 @@ export default function ExperienceWindow() {
                 >
                   {exp.company}
                 </span>
-                {exp && (
+                {i === 0 && (
                   <span
-                    style={{ color: "var(--color-gray-300)", fontSize: 10 }}
-                  ></span>
+                    style={{
+                      fontSize: 9,
+                      color: "#fff",
+                      background: "var(--color-blue)",
+                      padding: "1px 5px",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    FEATURED
+                  </span>
                 )}
               </div>
               <span
                 style={{
                   fontSize: 10,
                   color: "#fff",
-                  background: "var(--color-gray-300)",
+                  background: "#555",
                   padding: "1px 6px",
                   flexShrink: 0,
                   fontFamily: "Tahoma, Arial, sans-serif",
@@ -204,7 +300,14 @@ export default function ExperienceWindow() {
 
         {/* Education */}
         <div className="section-header">Education</div>
-        <div>
+        <div
+          style={{
+            padding: 12,
+            background: "#fff",
+            border: "1px solid var(--color-gray-300)",
+            boxShadow: "var(--shadow-outer-1)",
+          }}
+        >
           <div
             style={{
               display: "flex",
@@ -242,6 +345,23 @@ export default function ExperienceWindow() {
             {education.note}
           </p>
         </div>
+      </div>
+
+      {/* ── Status bar ────────────────────────────────────────── */}
+      <div
+        style={{
+          padding: "3px 8px",
+          background: "var(--color-gray-200)",
+          borderTop: "1px solid var(--color-gray-300)",
+          fontSize: 10,
+          color: "#555",
+          display: "flex",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <span>{experiences.length} experience record(s)</span>
+        <span>Resume updated {RESUME_LAST_UPDATED}</span>
       </div>
     </div>
   );

@@ -20,6 +20,20 @@ type ContentBlock =
   | { type: "code"; text: string }
   | { type: "hr" };
 
+const CATEGORIES: ("All" | Category)[] = [
+  "All",
+  "Career",
+  "Devlog",
+  "Experiments",
+  "Thoughts",
+];
+
+const BLOG_STATS = [
+  { label: "Posts", value: "9" },
+  { label: "Focus", value: "AI + DevTools" },
+  { label: "Latest", value: "June 2026" },
+];
+
 // ── Posts ─────────────────────────────────────────────────────────────────────
 const POSTS: BlogPost[] = [
   {
@@ -593,27 +607,33 @@ function renderBlock(block: ContentBlock, i: number) {
 export default function Blog() {
   const [selectedId, setSelectedId] = useState<string>(POSTS[0]?.id ?? "");
   const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState<"All" | Category>("All");
 
   const filteredPosts = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return POSTS;
-    return POSTS.filter(
-      (p) =>
+    return POSTS.filter((p) => {
+      const matchesCategory =
+        activeCategory === "All" || p.category === activeCategory;
+      const matchesSearch =
+        !q ||
         p.title.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
-        p.excerpt.toLowerCase().includes(q),
-    );
-  }, [search]);
+        p.excerpt.toLowerCase().includes(q);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeCategory, search]);
 
   const selectedPost =
     filteredPosts.find((p) => p.id === selectedId) ?? filteredPosts[0] ?? null;
+  const featuredPost = POSTS[0];
 
   return (
     <div
       style={{
         height: "100%",
         display: "grid",
-        gridTemplateColumns: "220px 1fr",
+        gridTemplateColumns: "260px 1fr",
         fontFamily: "Tahoma, Arial, sans-serif",
         fontSize: 12,
         overflow: "hidden",
@@ -633,7 +653,7 @@ export default function Blog() {
         {/* Search bar */}
         <div
           style={{
-            padding: "5px 6px",
+            padding: "8px",
             borderBottom: "1px solid #808080",
             background: "#c0c0c0",
           }}
@@ -651,6 +671,39 @@ export default function Blog() {
               boxSizing: "border-box",
             }}
           />
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 4,
+              marginTop: 8,
+            }}
+          >
+            {CATEGORIES.map((category) => {
+              const active = activeCategory === category;
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setActiveCategory(category)}
+                  style={{
+                    fontFamily: "Tahoma, Arial, sans-serif",
+                    fontSize: 10,
+                    border: "1px solid #808080",
+                    padding: "2px 6px",
+                    background: active ? "#000080" : "#d8d8d8",
+                    color: active ? "#fff" : "#000",
+                    cursor: "pointer",
+                    boxShadow: active
+                      ? "inset 1px 1px 0 #000"
+                      : "inset 1px 1px 0 #fff",
+                  }}
+                >
+                  {category}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Post list */}
@@ -755,14 +808,96 @@ export default function Blog() {
             boxShadow: "inset 0 1px 0 #fff",
           }}
         >
-          {filteredPosts.length} post{filteredPosts.length !== 1 ? "s" : ""}
+          {filteredPosts.length} post{filteredPosts.length !== 1 ? "s" : ""} ·{" "}
+          {activeCategory}
         </div>
       </div>
 
       {/* ── Right pane — post content ───────────────────────────────────────── */}
-      <div style={{ overflowY: "auto", background: "#fff" }}>
+      <div
+        style={{
+          overflowY: "auto",
+          background: "#fff",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         {selectedPost ? (
-          <div style={{ padding: "14px 18px" }}>
+          <div style={{ padding: "14px 18px", flex: 1 }}>
+            {/* Blog home card */}
+            <div
+              style={{
+                padding: "10px 12px",
+                background: "linear-gradient(90deg, #eef4ff, #ffffff)",
+                border: "1px solid #b8c7e6",
+                marginBottom: 12,
+                boxShadow: "inset 1px 1px 0 #fff",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  alignItems: "flex-start",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 10, color: "#555", marginBottom: 3 }}>
+                    Internet Explorer · Blog Archive
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 15,
+                      fontWeight: "bold",
+                      color: "#000080",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Writing in public about building, work, AI, and the messy
+                    middle.
+                  </div>
+                  <div style={{ fontSize: 11, color: "#333", lineHeight: 1.5 }}>
+                    Featured: {featuredPost.title}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 72px)",
+                    gap: 6,
+                    flexShrink: 0,
+                  }}
+                >
+                  {BLOG_STATS.map((stat) => (
+                    <div
+                      key={stat.label}
+                      style={{
+                        background: "#fff",
+                        border: "1px solid #c0c0c0",
+                        padding: "6px",
+                        boxShadow: "inset 1px 1px 0 #fff",
+                      }}
+                    >
+                      <div style={{ fontSize: 9, color: "#666" }}>
+                        {stat.label}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 2,
+                          fontSize: 11,
+                          fontWeight: "bold",
+                          color: "#000080",
+                        }}
+                      >
+                        {stat.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
             {/* Header */}
             <div style={{ marginBottom: 12 }}>
               <div
@@ -827,6 +962,33 @@ export default function Blog() {
               >
                 {selectedPost.excerpt}
               </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 6,
+                  marginTop: 10,
+                }}
+              >
+                {[
+                  `${readingTime(selectedPost.content)} min read`,
+                  `${selectedPost.content.length} sections`,
+                  selectedPost.category,
+                ].map((item) => (
+                  <span
+                    key={item}
+                    style={{
+                      fontSize: 10,
+                      padding: "2px 6px",
+                      background: "#f0f0f0",
+                      border: "1px solid #c0c0c0",
+                      color: "#333",
+                    }}
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Win95 double-rule separator */}
@@ -850,7 +1012,8 @@ export default function Blog() {
                 color: "#888",
               }}
             >
-              taahirah.exe · {selectedPost.date}
+              taahirah.exe · Blog Archive · {selectedPost.date} ·{" "}
+              {selectedPost.category}
             </div>
           </div>
         ) : (
@@ -858,6 +1021,21 @@ export default function Blog() {
             No post selected.
           </div>
         )}
+        <div
+          style={{
+            padding: "3px 8px",
+            background: "var(--color-gray-200, #c0c0c0)",
+            borderTop: "1px solid #808080",
+            fontSize: 10,
+            color: "#555",
+            display: "flex",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <span>Blog archive ready</span>
+          <span>{selectedPost ? selectedPost.title : "No post selected"}</span>
+        </div>
       </div>
     </div>
   );

@@ -17,13 +17,28 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 
 // Polite bot auto-replies when no server is connected
 const BOT_REPLIES = [
-  "Hey! 👋 Taahirah's portfolio is pretty cool right?",
-  "Feel free to check out the Projects window!",
-  "You can find her résumé in the taskbar.",
-  "She's open to opportunities — hit the Contact window!",
-  "Built with React, Three.js, and a lot of caffeine ☕",
-  "Nice to meet you! I'm the MSN bot 🤖",
+  "Taahirah is building AI developer tools, local-first workflows, and weird little software worlds. Very normal hobby, obviously.",
+  "Try opening AI Lab — PatchPilot, Recuris, and RetroOS are the big signals there.",
+  "Recruiter shortcut: Resume.log has the cleaned-up experience view and downloadable PDF.",
+  "Founder shortcut: Contact Terminal is the fastest way to reach her about AI/devtools work.",
+  "This whole portfolio is built with React, TypeScript, Three.js, and dangerous amounts of taste.",
+  "Current arc: AI engineer + developer tools builder. The side quests are Minecraft modding and retro UI.",
 ];
+
+const QUICK_PROMPTS = [
+  "What should I open first?",
+  "Tell me about PatchPilot",
+  "Is Taahirah open to work?",
+  "Where is the resume?",
+];
+
+const BOT_STATUS_LINES = [
+  "Online",
+  "Probably debugging something",
+  "AI Lab watcher",
+  "Retro concierge",
+];
+
 let botIdx = 0;
 
 export default function MSNWindow() {
@@ -31,7 +46,7 @@ export default function MSNWindow() {
     {
       id: uid(),
       author: "MSN Bot",
-      text: "Welcome to MSN Messenger! Say hi 👋",
+      text: "Welcome to TaahirahOS Messenger. Ask me what to open first, where the resume is, or what she's building.",
       ts: Date.now(),
     },
   ]);
@@ -45,6 +60,7 @@ export default function MSNWindow() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
+  const [botStatusIdx, setBotStatusIdx] = useState(0);
 
   // ── Try WebSocket connection (gracefully degrades to bot mode) ─────────────
   useEffect(() => {
@@ -69,14 +85,49 @@ export default function MSNWindow() {
     return () => ws.close();
   }, []);
 
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setBotStatusIdx((idx) => (idx + 1) % BOT_STATUS_LINES.length);
+    }, 2800);
+
+    return () => window.clearInterval(id);
+  }, []);
+
   // ── Auto-scroll ────────────────────────────────────────────────────────────
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const getBotReply = (text: string) => {
+    const q = text.toLowerCase();
+
+    if (q.includes("resume") || q.includes("cv")) {
+      return "Open Resume.log from the desktop or Start menu. It has the experience dashboard and PDF download buttons.";
+    }
+
+    if (q.includes("patchpilot") || q.includes("debug")) {
+      return "PatchPilot is the AI debugging project: stack traces in, ranked root causes and patch-ready next steps out.";
+    }
+
+    if (q.includes("work") || q.includes("hire") || q.includes("opportunity")) {
+      return "Yes — Taahirah is open to AI engineering, developer tools, internships, and strong early-career software roles.";
+    }
+
+    if (q.includes("open") || q.includes("first") || q.includes("start")) {
+      return "Start with Taahirah.exe, then AI Lab, then Resume.log. That route gives the story, proof of work, and credibility fast.";
+    }
+
+    if (q.includes("contact") || q.includes("email")) {
+      return "Use Contact Terminal. Her professional email is taahirah.engineer@proton.me.";
+    }
+
+    return BOT_REPLIES[botIdx % BOT_REPLIES.length];
+  };
+
   // ── Send ───────────────────────────────────────────────────────────────────
   const send = () => {
     const text = draft.trim();
+    const replyText = getBotReply(text);
     if (!text) return;
 
     const msg: Message = {
@@ -100,7 +151,7 @@ export default function MSNWindow() {
             {
               id: uid(),
               author: "MSN Bot",
-              text: BOT_REPLIES[botIdx % BOT_REPLIES.length],
+              text: replyText,
               ts: Date.now(),
             },
           ]);
@@ -136,7 +187,7 @@ export default function MSNWindow() {
         />
         <div style={{ fontWeight: "bold", fontSize: 14 }}>MSN Messenger</div>
         <div style={{ fontSize: 12, color: "#555" }}>
-          Enter your display name to chat
+          Enter your display name to chat with the portfolio concierge
         </div>
         <input
           className="field"
@@ -196,7 +247,7 @@ export default function MSNWindow() {
             MSN Messenger
           </div>
           <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 10 }}>
-            Signed in as <b>{name}</b>
+            Signed in as <b>{name}</b> · {BOT_STATUS_LINES[botStatusIdx]}
           </div>
         </div>
         <div
@@ -208,6 +259,38 @@ export default function MSNWindow() {
           }}
         >
           {connected ? "● LIVE" : "● BOT MODE"}
+        </div>
+      </div>
+
+      {/* ── Contact strip ─────────────────────────────────────────────────── */}
+      <div
+        style={{
+          padding: "6px 10px",
+          background: "linear-gradient(90deg, #eef4ff, #ffffff)",
+          borderBottom: "1px solid #c0c0c0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+          flexShrink: 0,
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: "bold", color: "#000080" }}>
+            Taahirah Denmark
+          </div>
+          <div style={{ fontSize: 10, color: "#555" }}>
+            AI Engineer · Developer Tools Builder · Open to opportunities
+          </div>
+        </div>
+        <div
+          style={{
+            fontSize: 10,
+            color: "#008000",
+            whiteSpace: "nowrap",
+          }}
+        >
+          ● online
         </div>
       </div>
 
@@ -267,6 +350,35 @@ export default function MSNWindow() {
         <div ref={bottomRef} />
       </div>
 
+      {/* ── Quick prompts ─────────────────────────────────────────────────── */}
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          padding: "6px 8px",
+          background: "#f7f7f7",
+          borderTop: "1px solid #e0e0e0",
+          flexWrap: "wrap",
+          flexShrink: 0,
+        }}
+      >
+        {QUICK_PROMPTS.map((prompt) => (
+          <button
+            key={prompt}
+            type="button"
+            className="btn"
+            style={{
+              fontFamily: "Tahoma, Arial, sans-serif",
+              fontSize: 10,
+              padding: "1px 6px",
+            }}
+            onClick={() => setDraft(prompt)}
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>
+
       {/* ── Divider ────────────────────────────────────────────────────────── */}
       <div style={{ height: 1, background: "#c0c0c0" }} />
 
@@ -283,7 +395,7 @@ export default function MSNWindow() {
         <input
           className="field"
           style={{ flex: 1, fontFamily: "Tahoma", fontSize: 12 }}
-          placeholder="Type a message... (Enter to send)"
+          placeholder="Ask about projects, resume, contact, or PatchPilot..."
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -314,7 +426,8 @@ export default function MSNWindow() {
         }}
       >
         <span>
-          {messages.length} message{messages.length !== 1 ? "s" : ""}
+          {messages.length} message{messages.length !== 1 ? "s" : ""} ·
+          Concierge mode
         </span>
         <span
           style={{

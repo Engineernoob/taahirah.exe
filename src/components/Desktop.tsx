@@ -76,10 +76,10 @@ interface PersistedDesktopState {
 type ShutdownAction = "shutdown" | "restart" | "dos";
 
 export const OWNER_NAME = "Taahirah Denmark";
-export const OWNER_TITLE = "Software Engineer";
+export const OWNER_TITLE = "AI Engineer & Developer Tools Builder";
 
-// Bumped to v3 to clear stale state that has old WindowIds
-const DESKTOP_STATE_STORAGE_KEY = "portfolio.desktop.state.v3";
+// Bumped to v4 to refresh desktop labels, owner title, and default window state.
+const DESKTOP_STATE_STORAGE_KEY = "portfolio.desktop.state.v4";
 
 interface IconConfig {
   id: WindowId;
@@ -88,10 +88,10 @@ interface IconConfig {
 }
 
 const ICONS: IconConfig[] = [
-  { id: "showcase", label: "My Computer", Icon: IconMyComputer },
+  { id: "showcase", label: "Taahirah.exe", Icon: IconMyComputer },
   { id: "about", label: "About Me", Icon: IconAboutMe },
-  { id: "experience", label: "Experience", Icon: IconBriefcase },
-  { id: "projects", label: "Projects", Icon: IconFolder },
+  { id: "experience", label: "Resume.log", Icon: IconBriefcase },
+  { id: "projects", label: "AI Lab", Icon: IconFolder },
   { id: "contact", label: "Contact.txt", Icon: IconEnvelope },
   { id: "wolfenstein", label: "Wolf3D.exe", Icon: IconWolfenstein },
   { id: "netflix", label: "Netflix 95", Icon: IconNetflix },
@@ -113,25 +113,30 @@ interface WindowConfig {
 }
 
 const WINDOW_CONFIG: Record<WindowId, WindowConfig> = {
-  showcase: { title: "Welcome", Icon: IconMyComputer, width: 520, height: 500 },
+  showcase: {
+    title: "Taahirah.exe",
+    Icon: IconMyComputer,
+    width: 560,
+    height: 540,
+  },
   about: { title: "About Me", Icon: IconAboutMe, width: 500, height: 560 },
   experience: {
-    title: "Experience.log",
+    title: "Resume.log",
     Icon: IconBriefcase,
     width: 540,
     height: 480,
   },
   projects: {
-    title: "Projects.dir",
+    title: "AI Lab.dir",
     Icon: IconFolder,
-    width: 560,
-    height: 500,
+    width: 820,
+    height: 560,
   },
   "project-detail": {
     title: "Project Details",
     Icon: IconFolder,
-    width: 460,
-    height: 420,
+    width: 520,
+    height: 500,
   },
   contact: {
     title: "Contact.txt",
@@ -167,7 +172,7 @@ const WINDOW_INITIAL: Record<WindowId, { x: number; y: number }> = {
   showcase: { x: 120, y: 40 },
   about: { x: 160, y: 60 },
   experience: { x: 180, y: 70 },
-  projects: { x: 200, y: 80 },
+  projects: { x: 150, y: 65 },
   "project-detail": { x: 240, y: 100 },
   contact: { x: 150, y: 65 },
   wolfenstein: { x: 100, y: 30 },
@@ -224,6 +229,7 @@ function isWindowId(value: unknown): value is WindowId {
 }
 
 function getDefaultDesktopState(): PersistedDesktopState {
+  topZ = Math.max(topZ, 11);
   return {
     openWindows: [
       {
@@ -232,6 +238,13 @@ function getDefaultDesktopState(): PersistedDesktopState {
         x: WINDOW_INITIAL.showcase.x,
         y: WINDOW_INITIAL.showcase.y,
         minimized: false,
+      },
+      {
+        id: "projects",
+        zIndex: topZ + 1,
+        x: WINDOW_INITIAL.projects.x,
+        y: WINDOW_INITIAL.projects.y,
+        minimized: true,
       },
     ],
     activeId: "showcase",
@@ -554,7 +567,7 @@ export default function Desktop({ onShutdown }: DesktopProps) {
         case "experience":
           return <ExperienceWindow />;
         case "projects":
-          return <ProjectsWindow />;
+          return <ProjectsWindow onOpenProject={openProjectDetail} />;
         case "project-detail":
           return activeProject ? (
             <ProjectDetailWindow {...activeProject} />
@@ -599,6 +612,24 @@ export default function Desktop({ onShutdown }: DesktopProps) {
       onContextMenu={handleDesktopCtx}
     >
       {/* ── Icons ─────────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          position: "absolute",
+          right: 14,
+          top: 12,
+          color: "rgba(255,255,255,0.85)",
+          fontFamily: "Tahoma, Arial, sans-serif",
+          fontSize: 11,
+          textAlign: "right",
+          textShadow: "1px 1px 0 rgba(0,0,0,0.45)",
+          pointerEvents: "none",
+          lineHeight: 1.5,
+        }}
+      >
+        <div style={{ fontWeight: "bold" }}>{OWNER_NAME}</div>
+        <div>{OWNER_TITLE}</div>
+        <div>AI Lab online</div>
+      </div>
       <div className="desktop-icons-col">
         {ICONS.map(({ id, label, Icon }) => (
           <div
@@ -725,7 +756,7 @@ export default function Desktop({ onShutdown }: DesktopProps) {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="start-menu-sidebar">
-            <span className="start-menu-brand">Windows 95</span>
+            <span className="start-menu-brand">TaahirahOS</span>
           </div>
           <div
             className="start-menu-items"
@@ -763,6 +794,32 @@ export default function Desktop({ onShutdown }: DesktopProps) {
                   ))}
                 </div>
               )}
+            </div>
+            <div
+              className="start-menu-item"
+              onMouseEnter={() => setProgOpen(false)}
+              onClick={() => {
+                openWindow("projects");
+                closeMenus();
+              }}
+            >
+              <span className="start-item-icon">
+                <IconFolder size={16} />
+              </span>
+              <span className="start-item-label">AI Lab</span>
+            </div>
+            <div
+              className="start-menu-item"
+              onMouseEnter={() => setProgOpen(false)}
+              onClick={() => {
+                openWindow("experience");
+                closeMenus();
+              }}
+            >
+              <span className="start-item-icon">
+                <IconBriefcase size={16} />
+              </span>
+              <span className="start-item-label">Resume.log</span>
             </div>
             <div className="start-menu-sep" />
             <div
@@ -825,7 +882,7 @@ export default function Desktop({ onShutdown }: DesktopProps) {
               openWindow("projects");
             }}
           >
-            Open Projects
+            Open AI Lab
           </div>
           <div
             className="ctx-menu-item"

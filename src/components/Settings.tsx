@@ -69,6 +69,26 @@ export const WALLPAPERS: WallpaperOption[] = [
     textColor: "#fff",
   },
   {
+    id: "ailab",
+    label: "AI Lab Grid",
+    value:
+      "radial-gradient(circle at 20% 20%, rgba(0,255,102,0.18), transparent 24%), linear-gradient(135deg, #020510 0%, #001b2e 55%, #000 100%)",
+    textColor: "#fff",
+  },
+  {
+    id: "retroblue",
+    label: "RetroOS Blue",
+    value: "linear-gradient(135deg, #000080 0%, #0b3d91 55%, #008080 100%)",
+    textColor: "#fff",
+  },
+  {
+    id: "souls",
+    label: "Soulslike Ember",
+    value:
+      "radial-gradient(circle at 70% 30%, rgba(255,120,30,0.35), transparent 20%), linear-gradient(135deg, #070303 0%, #210b05 50%, #050505 100%)",
+    textColor: "#fff",
+  },
+  {
     id: "custom",
     label: "Custom Color...",
     value: "#008080",
@@ -77,6 +97,31 @@ export const WALLPAPERS: WallpaperOption[] = [
 ];
 
 const SETTINGS_KEY = "win95-settings";
+
+const THEME_DETAILS = [
+  { label: "Shell", value: "TaahirahOS / Windows 95" },
+  { label: "Accent", value: "Classic Navy" },
+  { label: "UI Mode", value: "Retro Productivity" },
+  { label: "Sound Pack", value: "Clicky Desktop" },
+];
+
+const SCREEN_SAVERS = [
+  {
+    name: "None",
+    status: "Active",
+    description: "No screen saver. The grind remains visible.",
+  },
+  {
+    name: "Flying AI Lab",
+    status: "Concept",
+    description: "Floating PatchPilot, Recuris, and DARiAN badges.",
+  },
+  {
+    name: "CRT Starfield",
+    status: "Concept",
+    description: "Late-night green phosphor stars drifting across the screen.",
+  },
+];
 
 export function loadSettings(): { wallpaperId: string; customColor: string } {
   try {
@@ -135,7 +180,7 @@ export default function SettingsWindow({
   }, []);
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "display", label: "Background" },
+    { id: "display", label: "Desktop" },
     { id: "appearance", label: "Appearance" },
     { id: "screensaver", label: "Screen Saver" },
   ];
@@ -151,6 +196,41 @@ export default function SettingsWindow({
         background: "#c0c0c0",
       }}
     >
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          padding: "8px 10px",
+          background: "linear-gradient(90deg, #eef4ff, #cfdcff)",
+          borderBottom: "1px solid #808080",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+          flexShrink: 0,
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: "bold", color: "#000080" }}>
+            Display Properties
+          </div>
+          <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>
+            Customize TaahirahOS desktop wallpaper, appearance, and idle
+            behavior.
+          </div>
+        </div>
+        <div
+          style={{
+            fontSize: 10,
+            background: "#fff",
+            border: "1px solid #808080",
+            padding: "3px 6px",
+            boxShadow: "inset 1px 1px 0 #fff",
+          }}
+        >
+          Theme: Windows Classic
+        </div>
+      </div>
+
       {/* ── Tab bar ────────────────────────────────────────────────────────── */}
       <div
         style={{
@@ -218,7 +298,17 @@ export default function SettingsWindow({
                     fontFamily: "Tahoma",
                   }}
                 >
-                  Preview
+                  <div
+                    style={{
+                      textAlign: "center",
+                      color: effectiveWallpaper.textColor,
+                    }}
+                  >
+                    <div style={{ fontWeight: "bold", marginBottom: 4 }}>
+                      TaahirahOS
+                    </div>
+                    <div style={{ fontSize: 8 }}>AI Lab online</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -226,7 +316,7 @@ export default function SettingsWindow({
             {/* Wallpaper list */}
             <div>
               <div style={{ fontWeight: "bold", marginBottom: 6 }}>
-                Select a background:
+                Select a desktop wallpaper:
               </div>
               <div
                 style={{
@@ -306,13 +396,56 @@ export default function SettingsWindow({
                 lineHeight: 1.8,
               }}
             >
-              <div>
-                🎨 Windows Classic — <b>Active</b>
+              {THEME_DETAILS.map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    borderBottom: "1px solid #eee",
+                    padding: "3px 0",
+                  }}
+                >
+                  <span>{item.label}</span>
+                  <b style={{ color: "#000080" }}>{item.value}</b>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ fontWeight: "bold" }}>Window preview</div>
+            <div
+              style={{
+                background: "#c0c0c0",
+                border: "2px solid",
+                borderColor: "#fff #808080 #808080 #fff",
+                padding: 8,
+              }}
+            >
+              <div
+                style={{
+                  background: "#000080",
+                  color: "#fff",
+                  padding: "3px 6px",
+                  fontWeight: "bold",
+                  fontSize: 11,
+                }}
+              >
+                TaahirahOS Window
               </div>
-              <div style={{ marginTop: 8, color: "#808080" }}>
-                Additional themes coming soon.
+              <div
+                style={{
+                  background: "#fff",
+                  padding: 10,
+                  border: "2px solid",
+                  borderColor: "#808080 #fff #fff #808080",
+                  fontSize: 11,
+                }}
+              >
+                Classic shell, tiny fonts, big portfolio energy.
               </div>
             </div>
+
             <div style={{ fontWeight: "bold" }}>Font size</div>
             <div
               style={{
@@ -324,7 +457,8 @@ export default function SettingsWindow({
                 color: "#555",
               }}
             >
-              Small fonts — <b>Active</b>
+              Small fonts — <b>Active</b>. Recruiter readability —{" "}
+              <b>Improved</b>.
             </div>
           </div>
         )}
@@ -344,12 +478,35 @@ export default function SettingsWindow({
                 lineHeight: 1.8,
               }}
             >
-              <div>
-                🌀 (None) — <b>Active</b>
-              </div>
-              <div style={{ marginTop: 8, color: "#808080" }}>
-                Screen savers are not yet implemented.
-              </div>
+              {SCREEN_SAVERS.map((saver) => (
+                <div
+                  key={saver.name}
+                  style={{
+                    padding: "6px 0",
+                    borderBottom: "1px solid #eee",
+                  }}
+                >
+                  <div>
+                    🌀 {saver.name} — <b>{saver.status}</b>
+                  </div>
+                  <div style={{ color: "#777", fontSize: 10 }}>
+                    {saver.description}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                padding: "10px 12px",
+                background: "linear-gradient(90deg, #eef4ff, #ffffff)",
+                border: "1px solid #b8c7e6",
+                lineHeight: 1.6,
+              }}
+            >
+              Idle mode currently disabled so visitors stay focused on the
+              portfolio. A CRT-style saver would be dangerous though. Too much
+              flavor.
             </div>
           </div>
         )}
@@ -362,39 +519,42 @@ export default function SettingsWindow({
           borderTop: "2px solid #808080",
           padding: "8px 12px",
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           gap: 6,
           flexShrink: 0,
         }}
       >
-        {applied && (
-          <span
-            style={{
-              fontSize: 11,
-              color: "#007700",
-              alignSelf: "center",
-              marginRight: 8,
-            }}
+        <div style={{ fontSize: 10, color: "#555", alignSelf: "center" }}>
+          Wallpaper: {effectiveWallpaper.label}
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {applied && (
+            <span
+              style={{
+                fontSize: 11,
+                color: "#007700",
+                alignSelf: "center",
+                marginRight: 8,
+              }}
+            >
+              ✓ Applied
+            </span>
+          )}
+          <button
+            className="btn"
+            style={{ fontFamily: "Tahoma", fontSize: 12, minWidth: 64 }}
+            onClick={apply}
           >
-            ✓ Applied
-          </span>
-        )}
-        <button
-          className="btn"
-          style={{ fontFamily: "Tahoma", fontSize: 12, minWidth: 64 }}
-          onClick={apply}
-        >
-          Apply
-        </button>
-        <button
-          className="btn"
-          style={{ fontFamily: "Tahoma", fontSize: 12, minWidth: 64 }}
-          onClick={() => {
-            apply();
-          }}
-        >
-          OK
-        </button>
+            Apply
+          </button>
+          <button
+            className="btn"
+            style={{ fontFamily: "Tahoma", fontSize: 12, minWidth: 64 }}
+            onClick={apply}
+          >
+            OK
+          </button>
+        </div>
       </div>
     </div>
   );

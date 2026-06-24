@@ -2,7 +2,12 @@ import { useState, useEffect, useRef } from "react";
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 
-type Era = "Childhood" | "Anime" | "Adult Dramas";
+type Era =
+  | "Childhood"
+  | "Anime"
+  | "Adult Dramas"
+  | "Prestige Fantasy"
+  | "True Crime";
 
 interface Show {
   id: string;
@@ -17,6 +22,7 @@ interface Show {
   accentColor: string;
   bgGradient: string;
   maturityRating: string;
+  mood?: string;
 }
 
 const SHOWS: Show[] = [
@@ -36,6 +42,25 @@ const SHOWS: Show[] = [
     bgGradient:
       "linear-gradient(135deg, #1a3a5c 0%, #0a1a2e 60%, #141414 100%)",
     maturityRating: "TV-Y7",
+    mood: "Absurd comfort",
+  },
+  {
+    id: "adventuretime",
+    title: "Adventure Time",
+    era: "Childhood",
+    years: "2010–2018",
+    genre: "Fantasy Adventure",
+    rating: "10",
+    memory:
+      "Started as goofy sword fights and somehow became one of the deepest animated shows ever made. Finn and Jake were therapy with swords.",
+    synopsis:
+      "Finn and Jake explore the Land of Ooo while dealing with growing up, loss, identity, friendship, and change. Weird, funny, and quietly devastating.",
+    icon: "🗡️",
+    accentColor: "#5ec8ff",
+    bgGradient:
+      "linear-gradient(135deg, #002b4d 0%, #001422 60%, #141414 100%)",
+    maturityRating: "TV-PG",
+    mood: "Existential whimsy",
   },
   {
     id: "rugrats",
@@ -53,6 +78,7 @@ const SHOWS: Show[] = [
     bgGradient:
       "linear-gradient(135deg, #3a1a00 0%, #1a0a00 60%, #141414 100%)",
     maturityRating: "TV-Y7",
+    mood: "Tiny chaos",
   },
   {
     id: "heyarnold",
@@ -140,6 +166,113 @@ const SHOWS: Show[] = [
     maturityRating: "TV-PG",
   },
   {
+    id: "gameofthrones",
+    title: "Game of Thrones",
+    era: "Prestige Fantasy",
+    years: "2011–2019",
+    genre: "Fantasy / Political Drama",
+    rating: "10",
+    memory:
+      "The first four seasons are some of the greatest television ever created. I still have trust issues from the Red Wedding.",
+    synopsis:
+      "Noble houses fight for power across Westeros while ancient threats rise beyond the Wall. Dragons, betrayal, politics, and generational trauma with swords.",
+    icon: "🐺",
+    accentColor: "#b8c7d9",
+    bgGradient:
+      "linear-gradient(135deg, #0b1118 0%, #05080c 60%, #141414 100%)",
+    maturityRating: "TV-MA",
+    mood: "Political warfare",
+  },
+  {
+    id: "houseofthedragon",
+    title: "House of the Dragon",
+    era: "Prestige Fantasy",
+    years: "2022–present",
+    genre: "Fantasy / Family Drama",
+    rating: "10",
+    memory:
+      "Targaryens will ruin a family dinner, a kingdom, and several bloodlines before admitting they need therapy. I am seated every time.",
+    synopsis:
+      "A brutal succession crisis tears House Targaryen apart, setting dragon against dragon in a family war where nobody is normal and everyone has a claim.",
+    icon: "🐉",
+    accentColor: "#d64a2f",
+    bgGradient:
+      "linear-gradient(135deg, #240505 0%, #0b0202 62%, #141414 100%)",
+    maturityRating: "TV-MA",
+    mood: "Dragon politics",
+  },
+  {
+    id: "scandal",
+    title: "Scandal",
+    era: "Adult Dramas",
+    years: "2012–2018",
+    genre: "Political Thriller / Drama",
+    rating: "10",
+    memory:
+      "Olivia Pope had America stress eating popcorn every Thursday. The coats, the speeches, the chaos — elite television mess.",
+    synopsis:
+      "A crisis manager protects Washington's most powerful people while navigating secrets, power, romance, and scandals that could destroy careers overnight.",
+    icon: "🏛️",
+    accentColor: "#f2f2f2",
+    bgGradient: "linear-gradient(135deg, #2b2b2b 0%, #111 60%, #141414 100%)",
+    maturityRating: "TV-14",
+    mood: "Political chaos",
+  },
+  {
+    id: "beingmaryjane",
+    title: "Being Mary Jane",
+    era: "Adult Dramas",
+    years: "2013–2019",
+    genre: "Drama / Romance",
+    rating: "9",
+    memory:
+      "One of the most realistic portrayals of a successful Black woman trying to balance ambition, family, love, loneliness, and everybody else's expectations.",
+    synopsis:
+      "A successful news anchor navigates career pressure, complicated relationships, family obligations, and the cost of being expected to have everything together.",
+    icon: "🎤",
+    accentColor: "#d6a24a",
+    bgGradient:
+      "linear-gradient(135deg, #2a1704 0%, #120902 62%, #141414 100%)",
+    maturityRating: "TV-14",
+    mood: "Career ambition",
+  },
+  {
+    id: "thegame",
+    title: "The Game",
+    era: "Adult Dramas",
+    years: "2006–2015",
+    genre: "Comedy Drama / Sports",
+    rating: "9",
+    memory:
+      "The amount of drama per episode should have been medically impossible. Football, fame, relationships, ego, and everybody making questionable choices.",
+    synopsis:
+      "The lives of professional football players and the women connected to them collide through fame, relationships, money, loyalty, and nonstop drama.",
+    icon: "🏈",
+    accentColor: "#46d369",
+    bgGradient:
+      "linear-gradient(135deg, #061c08 0%, #031003 60%, #141414 100%)",
+    maturityRating: "TV-14",
+    mood: "Messy relationships",
+  },
+  {
+    id: "htgawm",
+    title: "How to Get Away with Murder",
+    era: "Adult Dramas",
+    years: "2014–2020",
+    genre: "Legal Thriller / Mystery",
+    rating: "10",
+    memory:
+      "Viola Davis carried this show on her back while everybody made the worst possible decision at the worst possible time.",
+    synopsis:
+      "A brilliant criminal law professor and her students become entangled in murder, cover-ups, secrets, and legal chaos that keeps getting worse.",
+    icon: "⚖️",
+    accentColor: "#aa66ff",
+    bgGradient:
+      "linear-gradient(135deg, #14051f 0%, #08020d 62%, #141414 100%)",
+    maturityRating: "TV-14",
+    mood: "Murder mystery addiction",
+  },
+  {
     id: "breakingbad",
     title: "Breaking Bad",
     era: "Adult Dramas",
@@ -155,6 +288,7 @@ const SHOWS: Show[] = [
     bgGradient:
       "linear-gradient(135deg, #0a1500 0%, #060d00 60%, #141414 100%)",
     maturityRating: "TV-MA",
+    mood: "Moral collapse",
   },
   {
     id: "thewire",
@@ -189,14 +323,113 @@ const SHOWS: Show[] = [
     bgGradient:
       "linear-gradient(135deg, #050a18 0%, #020508 60%, #141414 100%)",
     maturityRating: "TV-MA",
+    mood: "Stress marathon",
+  },
+  {
+    id: "evilliveshere",
+    title: "Evil Lives Here",
+    era: "True Crime",
+    years: "2016–present",
+    genre: "True Crime / Documentary",
+    rating: "10",
+    memory:
+      "Every episode starts with someone saying they ignored 300 red flags and then you spend the whole hour yelling at the screen.",
+    synopsis:
+      "People who lived with killers recount the warning signs, manipulation, fear, and aftermath of realizing evil was much closer than they understood.",
+    icon: "😨",
+    accentColor: "#d9d9d9",
+    bgGradient:
+      "linear-gradient(135deg, #101010 0%, #050505 60%, #141414 100%)",
+    maturityRating: "TV-14",
+    mood: "Absolutely terrifying",
+  },
+  {
+    id: "deadlywomen",
+    title: "Deadly Women",
+    era: "True Crime",
+    years: "2008–2021",
+    genre: "True Crime / Documentary",
+    rating: "10",
+    memory:
+      "This show had me side-eyeing everybody. The narration alone could make folding laundry feel like evidence collection.",
+    synopsis:
+      "A true crime anthology examining women who commit murder, exploring motive, opportunity, and the psychology behind deadly choices.",
+    icon: "🩸",
+    accentColor: "#cc0000",
+    bgGradient:
+      "linear-gradient(135deg, #240000 0%, #080000 60%, #141414 100%)",
+    maturityRating: "TV-14",
+    mood: "Never trust anybody",
+  },
+  {
+    id: "seenoevil",
+    title: "See No Evil",
+    era: "True Crime",
+    years: "2015–present",
+    genre: "True Crime / Investigation",
+    rating: "9",
+    memory:
+      "The second they say they found surveillance footage, I am locked in like I work for the precinct.",
+    synopsis:
+      "Investigators use surveillance camera footage to reconstruct crimes, identify suspects, and uncover the truth one frame at a time.",
+    icon: "📹",
+    accentColor: "#66d9ff",
+    bgGradient:
+      "linear-gradient(135deg, #031a24 0%, #02080b 60%, #141414 100%)",
+    maturityRating: "TV-14",
+    mood: "Security camera detective",
+  },
+  {
+    id: "fearthyneighbor",
+    title: "Fear Thy Neighbor",
+    era: "True Crime",
+    years: "2014–present",
+    genre: "True Crime / Documentary",
+    rating: "10",
+    memory:
+      "This show is the reason I believe a property line dispute can turn into a whole season finale.",
+    synopsis:
+      "Neighbor conflicts escalate from small disagreements into obsession, harassment, violence, and tragedy.",
+    icon: "🏠",
+    accentColor: "#ff8844",
+    bgGradient:
+      "linear-gradient(135deg, #2a1004 0%, #0d0502 60%, #141414 100%)",
+    maturityRating: "TV-14",
+    mood: "Suburban nightmare",
+  },
+  {
+    id: "americanmonster",
+    title: "American Monster",
+    era: "True Crime",
+    years: "2016–present",
+    genre: "True Crime / Documentary",
+    rating: "10",
+    memory:
+      "It always starts with normal home videos and ends with you realizing the vibes were rancid from minute one.",
+    synopsis:
+      "Home footage and interviews reveal the hidden darkness behind seemingly ordinary families, relationships, and communities.",
+    icon: "📼",
+    accentColor: "#bfa46a",
+    bgGradient:
+      "linear-gradient(135deg, #1d1608 0%, #080602 60%, #141414 100%)",
+    maturityRating: "TV-14",
+    mood: "Looks normal until it doesn't",
   },
 ];
 
-const ERAS: Era[] = ["Childhood", "Anime", "Adult Dramas"];
+const ERAS: Era[] = [
+  "Childhood",
+  "Anime",
+  "Prestige Fantasy",
+  "Adult Dramas",
+  "True Crime",
+];
 const ERA_LABELS: Record<Era, string> = {
   Childhood: "📺 Childhood Classics",
   Anime: "⛩️ Anime",
+  "Prestige Fantasy": "🐉 Prestige Fantasy",
   "Adult Dramas": "🎬 Adult Dramas",
+  "True Crime": "🔍 ID Channel / True Crime",
 };
 
 // ─── ta-dum sound ─────────────────────────────────────────────────────────────
@@ -321,6 +554,26 @@ function ShowCard({
         >
           {show.maturityRating}
         </div>
+        {show.mood && (
+          <div
+            style={{
+              position: "absolute",
+              left: 3,
+              top: 3,
+              background: "rgba(0,0,0,0.75)",
+              color: show.accentColor,
+              fontSize: 7,
+              padding: "0 3px",
+              fontFamily: "Arial, sans-serif",
+              maxWidth: 70,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {show.mood}
+          </div>
+        )}
         {/* Hover overlay */}
         {active && (
           <div
@@ -453,7 +706,7 @@ function Hero({ show, onPlay }: { show: Show; onPlay: (s: Show) => void }) {
             fontFamily: "Arial, sans-serif",
           }}
         >
-          {show.era}
+          {show.mood ? `${show.era} · ${show.mood}` : show.era}
         </div>
         <div
           style={{
@@ -746,6 +999,19 @@ function NowPlaying({ show, onBack }: { show: Show; onBack: () => void }) {
             >
               {show.maturityRating}
             </span>
+            {show.mood && (
+              <span
+                style={{
+                  border: `1px solid ${show.accentColor}55`,
+                  color: show.accentColor,
+                  fontSize: 9,
+                  padding: "1px 6px",
+                  fontWeight: "bold",
+                }}
+              >
+                {show.mood}
+              </span>
+            )}
             <span
               style={{
                 background: show.accentColor,
@@ -1176,6 +1442,18 @@ export default function NetflixWindow() {
                   >
                     {selectedShow.maturityRating}
                   </span>
+                  {selectedShow.mood && (
+                    <span
+                      style={{
+                        border: `1px solid ${selectedShow.accentColor}55`,
+                        color: selectedShow.accentColor,
+                        fontSize: 9,
+                        padding: "0 4px",
+                      }}
+                    >
+                      {selectedShow.mood}
+                    </span>
+                  )}
                 </div>
               </div>
               <button

@@ -38,6 +38,13 @@ const TIPS = [
   "Right-click the desktop for options.",
 ];
 
+const STATS = [
+  { label: "Projects", value: "15+" },
+  { label: "AI Tools", value: "8+" },
+  { label: "Years Coding", value: "3+" },
+  { label: "Current Focus", value: "AI" },
+];
+
 export default function ShowcaseWindow({ onOpen }: ShowcaseWindowProps) {
   const [tipIdx] = useState(() => Math.floor(Math.random() * TIPS.length));
   const [dismissed, setDismissed] = useState(false);
@@ -118,7 +125,7 @@ export default function ShowcaseWindow({ onOpen }: ShowcaseWindowProps) {
               marginTop: 3,
             }}
           >
-            Software Engineer · Lewis University CS '27
+            AI Engineer · Developer Tools Builder · Lewis University CS '27
           </div>
         </div>
       </div>
@@ -139,6 +146,48 @@ export default function ShowcaseWindow({ onOpen }: ShowcaseWindowProps) {
           explore. Use the quick-launch buttons below or double-click any icon
           on the desktop.
         </p>
+
+        {/* Portfolio snapshot */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 8,
+            marginBottom: 14,
+          }}
+        >
+          {STATS.map((stat) => (
+            <div
+              key={stat.label}
+              style={{
+                background: "#f4f4f4",
+                padding: "10px",
+                border: "1px solid #b0b0b0",
+                boxShadow: "inset 1px 1px 0 #fff",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#666",
+                  marginBottom: 4,
+                  textTransform: "uppercase",
+                }}
+              >
+                {stat.label}
+              </div>
+              <div
+                style={{
+                  fontSize: 16,
+                  fontWeight: "bold",
+                  color: "#000080",
+                }}
+              >
+                {stat.value}
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Win95 divider */}
         <div style={{ height: 1, background: "#808080", margin: "0 0 1px" }} />
@@ -172,6 +221,33 @@ export default function ShowcaseWindow({ onOpen }: ShowcaseWindowProps) {
               </div>
             </button>
           ))}
+        </div>
+
+        {/* Current focus */}
+        <div
+          style={{
+            padding: "10px 12px",
+            background: "linear-gradient(90deg, #eef4ff, #ffffff)",
+            border: "1px solid #b8c7e6",
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 10,
+              textTransform: "uppercase",
+              color: "#555",
+              marginBottom: 4,
+            }}
+          >
+            Currently Building
+          </div>
+          <div style={{ fontWeight: "bold", marginBottom: 4 }}>
+            PatchPilot · Recuris · RetroOS Portfolio
+          </div>
+          <div style={{ fontSize: 11, lineHeight: 1.6, color: "#333" }}>
+            Exploring AI developer tools, local-first workflows, autonomous software agents, and creative operating-system inspired interfaces.
+          </div>
         </div>
 
         {/* Win95 divider */}
@@ -246,6 +322,16 @@ export default function ShowcaseWindow({ onOpen }: ShowcaseWindowProps) {
           />
           Don't show this again
         </label>
+
+        <div
+          style={{
+            fontSize: 11,
+            color: "#444",
+            marginLeft: "auto",
+          }}
+        >
+          Welcome.exe loaded successfully
+        </div>
 
         <button
           className="btn"

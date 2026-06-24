@@ -14,6 +14,14 @@ const FADE_IN_MS = 200;
 
 const PROGRESS_TOTAL = 18;
 
+const STARTUP_MESSAGES = [
+  "Loading AI Lab...",
+  "Mounting Resume.log...",
+  "Starting Internet Explorer...",
+  "Connecting MSN Messenger...",
+  "Preparing TaahirahOS desktop...",
+];
+
 // Controlled progress bar. `filled` is owned by the parent; the bar just renders.
 function ProgressBar({ filled }: { filled: number }) {
   return (
@@ -46,6 +54,7 @@ function ProgressBar({ filled }: { filled: number }) {
 
 export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
   const [filled, setFilled] = useState(0);
+  const [messageIdx, setMessageIdx] = useState(0);
   // Drives the fade-in CSS opacity transition. Set to 1 on next frame so
   // the browser actually animates 0 -> 1 instead of skipping to 1.
   const [opacity, setOpacity] = useState(0);
@@ -65,6 +74,12 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
     function tick() {
       i++;
       setFilled(i);
+      setMessageIdx(
+        Math.min(
+          STARTUP_MESSAGES.length - 1,
+          Math.floor((i / PROGRESS_TOTAL) * STARTUP_MESSAGES.length),
+        ),
+      );
       if (i < PROGRESS_TOTAL) {
         timerId = window.setTimeout(tick, stepMs);
       } else {
@@ -112,10 +127,11 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: 3,
-            width: 76,
-            height: 76,
-            marginBottom: 20,
-            filter: "drop-shadow(0 2px 8px rgba(0,0,80,0.8))",
+            width: 82,
+            height: 82,
+            marginBottom: 18,
+            filter: "drop-shadow(0 2px 10px rgba(0,0,120,0.9))",
+            transform: "skewY(-4deg)",
           }}
         >
           <div style={{ background: "#c0002a" }} />
@@ -152,7 +168,7 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
                 opacity: 0.9,
               }}
             >
-              Microsoft
+              Denmark Systems
             </span>
             <span
               style={{
@@ -165,7 +181,7 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
                 lineHeight: 1,
               }}
             >
-              Windows
+              TaahirahOS
             </span>
           </div>
           <span
@@ -180,8 +196,21 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
               marginBottom: 4,
             }}
           >
-            95
+            26
           </span>
+        </div>
+
+        <div
+          style={{
+            fontFamily: "Tahoma, Arial, sans-serif",
+            fontSize: 11,
+            color: "#7aa2ff",
+            marginBottom: 10,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
+          Personal AI Workstation
         </div>
 
         <p
@@ -194,10 +223,24 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
             letterSpacing: "0.02em",
           }}
         >
-          Starting Windows 95...
+          {STARTUP_MESSAGES[messageIdx]}
         </p>
 
         <ProgressBar filled={filled} />
+        <div
+          style={{
+            marginTop: 10,
+            width: 200,
+            display: "flex",
+            justifyContent: "space-between",
+            fontFamily: "'Courier New', monospace",
+            fontSize: 10,
+            color: "#777",
+          }}
+        >
+          <span>{Math.round((filled / PROGRESS_TOTAL) * 100)}%</span>
+          <span>AI Lab online</span>
+        </div>
       </div>
 
       <div
@@ -210,7 +253,7 @@ export default function WindowsSplash({ onComplete }: WindowsSplashProps) {
           letterSpacing: "0.03em",
         }}
       >
-        Copyright © 1998 Denmark Corp.
+        Copyright © 1998-2026 Denmark Systems · TaahirahOS Build 2.6
       </div>
     </div>
   );

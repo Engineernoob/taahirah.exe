@@ -6,6 +6,9 @@ export interface ProjectData {
   githubUrl?: string;
   liveUrl?: string;
   status?: string;
+  category?: string;
+  updated?: string;
+  highlight?: string;
 }
 
 export default function ProjectDetailWindow({
@@ -16,6 +19,9 @@ export default function ProjectDetailWindow({
   githubUrl,
   liveUrl,
   status = "Completed",
+  category = "Project",
+  updated = "Recently",
+  highlight,
 }: ProjectData) {
   return (
     <div
@@ -81,7 +87,7 @@ export default function ProjectDetailWindow({
                 background:
                   status === "Live"
                     ? "#1a4a8b"
-                    :                   status === "In-Progress"
+                    : status === "In-Progress"
                       ? "#5a3a00"
                       : "#1a5a1a",
                 color: "#fff",
@@ -92,6 +98,10 @@ export default function ProjectDetailWindow({
             >
               {status}
             </span>
+            <span>{category}</span>
+            <span>·</span>
+            <span>Updated {updated}</span>
+            <span>·</span>
             <span>{tech.length} technologies</span>
           </div>
         </div>
@@ -99,11 +109,129 @@ export default function ProjectDetailWindow({
 
       {/* ── Body ──────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px" }}>
+        {/* Case study summary */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 10,
+            marginBottom: 14,
+          }}
+        >
+          <div
+            style={{
+              padding: "10px",
+              background: "var(--color-gray-100)",
+              boxShadow: "var(--shadow-inner-1)",
+            }}
+          >
+            <div style={{ fontSize: 10, color: "#777", marginBottom: 4 }}>
+              Category
+            </div>
+            <div style={{ fontWeight: "bold", color: "var(--color-blue)" }}>
+              {category}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: "10px",
+              background: "var(--color-gray-100)",
+              boxShadow: "var(--shadow-inner-1)",
+            }}
+          >
+            <div style={{ fontSize: 10, color: "#777", marginBottom: 4 }}>
+              Status
+            </div>
+            <div style={{ fontWeight: "bold" }}>{status}</div>
+          </div>
+
+          <div
+            style={{
+              padding: "10px",
+              background: "var(--color-gray-100)",
+              boxShadow: "var(--shadow-inner-1)",
+            }}
+          >
+            <div style={{ fontSize: 10, color: "#777", marginBottom: 4 }}>
+              Last Updated
+            </div>
+            <div style={{ fontWeight: "bold" }}>{updated}</div>
+          </div>
+        </div>
+
+        {highlight && (
+          <div
+            style={{
+              padding: "10px 12px",
+              background: "linear-gradient(90deg, #eef4ff, #ffffff)",
+              border: "1px solid var(--color-gray-300)",
+              boxShadow: "inset 0 1px 0 #fff",
+              marginBottom: 14,
+            }}
+          >
+            <div style={{ fontSize: 10, color: "#555", marginBottom: 4 }}>
+              Why this project matters
+            </div>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 12,
+                lineHeight: 1.5,
+                color: "#222",
+              }}
+            >
+              {highlight}
+            </p>
+          </div>
+        )}
+
         {/* Overview */}
         <div className="section-header">Overview</div>
         <p className="content-p" style={{ marginTop: 0 }}>
           {description}
         </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 10,
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              padding: "10px",
+              background: "#fff",
+              border: "1px solid var(--color-gray-300)",
+              boxShadow: "var(--shadow-outer-1)",
+            }}
+          >
+            <div className="section-header" style={{ marginBottom: 6 }}>
+              Problem
+            </div>
+            <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5 }}>
+              Built to make a specific workflow clearer, faster, or easier to understand instead of existing as a generic portfolio filler project.
+            </p>
+          </div>
+
+          <div
+            style={{
+              padding: "10px",
+              background: "#fff",
+              border: "1px solid var(--color-gray-300)",
+              boxShadow: "var(--shadow-outer-1)",
+            }}
+          >
+            <div className="section-header" style={{ marginBottom: 6 }}>
+              What I Shipped
+            </div>
+            <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5 }}>
+              A working implementation with real UI, project structure, links, and enough product thinking to show how I move from idea to usable software.
+            </p>
+          </div>
+        </div>
 
         <div
           style={{
@@ -151,8 +279,8 @@ export default function ProjectDetailWindow({
         />
         <div style={{ height: 1, background: "#fff", marginBottom: 12 }} />
 
-        {/* Links */}
-        <div className="section-header">Links</div>
+        {/* Project Links */}
+        <div className="section-header">Project Links</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {/* GitHub */}
           {githubUrl ? (
@@ -294,6 +422,9 @@ export default function ProjectDetailWindow({
       >
         <span style={{ flexShrink: 0 }}>{name}</span>
         <span style={{ flexShrink: 0 }}>·</span>
+        <span style={{ flexShrink: 0 }}>{status}</span>
+        <span style={{ flexShrink: 0 }}>·</span>
+        <span style={{ flexShrink: 0 }}>{category}</span>
         <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
           {tech.join(", ")}
         </span>
